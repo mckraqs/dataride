@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "dataride"
+version = "0.1.0"
+description = "Lightning-fast data platform setup for small/medium projects & PoCs"
+authors = ["Mateusz Polakowski <mateusz.polakowski.ds@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyhcl = "^0.4.4"
+toml = "^0.10.2"
+python-hcl2 = "^3.0.5"
+PyYAML = "^6.0"
+Jinja2 = "^3.1.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
