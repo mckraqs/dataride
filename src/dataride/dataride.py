@@ -44,17 +44,13 @@ def create(
         resource_updated = update_resource_with_defaults(resource, resource_type)
         resource_template = load_template(resource_type)
         if resource[resource_type].get("_jinja", False):
-            resource_template = render_jinja(
-                resource_template, resource_updated[resource_type], jinja_environment
-            )
+            resource_template = render_jinja(resource_template, resource_updated[resource_type], jinja_environment)
 
-        resource_template_filled = fill_template_values(
-            resource_updated, resource_type, resource_template
-        )
+        resource_template_filled = fill_template_values(resource_updated, resource_type, resource_template)
 
         output_main += resource_template_filled + "\n" * 2
 
-    env_main = load_template('env_main')
+    env_main = load_template("env_main")
     env_main = render_jinja(env_main, config, jinja_environment)
 
     save_infra_setup_code(destination, output_main, env_main)
