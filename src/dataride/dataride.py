@@ -1,4 +1,6 @@
 import click
+from collections import defaultdict
+
 from .utils import (
     prepare_jinja_environment,
     load_config,
@@ -7,7 +9,9 @@ from .utils import (
     load_template,
     render_jinja,
     fill_template_values,
-    save_infra_setup_code,
+    create_result_dir_structure,
+    save_module_setup,
+    save_env_setup,
 )
 
 
@@ -32,7 +36,7 @@ def create(
     :param destination: where infrastructure code should be saved
     """
     jinja_environment = prepare_jinja_environment()
-    output_main = ""
+    output_dict = defaultdict(str)
 
     config = load_config(config_path)
 
@@ -43,14 +47,19 @@ def create(
 
         resource_updated = update_resource_with_defaults(resource, resource_type)
         resource_template = load_template(resource_type)
-        if resource[resource_type].get("_jinja", False):
+        if resource[resource_type]["_jinja"]:
             resource_template = render_jinja(resource_template, resource_updated[resource_type], jinja_environment)
 
         resource_template_filled = fill_template_values(resource_updated, resource_type, resource_template)
-
-        output_main += resource_template_filled + "\n" * 2
+        output_dict[resource[resource_type]["_module"]] += resource_template_filled + "\n" * 2
 
     env_main = load_template("env_main")
     env_main = render_jinja(env_main, config, jinja_environment)
 
-    save_infra_setup_code(destination, output_main, env_main)
+    create_result_dir_structure(destination)
+
+    for module in output_dict.keys():
+        save_module_setup(destination, module, output_dict[module])
+
+    # TODO: Add different environments creation
+    save_env_setup(destination, env_main)
