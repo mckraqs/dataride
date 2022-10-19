@@ -6,3 +6,4 @@ data/
 results/
 
 tests.ipynb
+*__pycache__/

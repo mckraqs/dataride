@@ -1,0 +1,19 @@
+platforms:
+  - aws
+resources:
+  - aws_s3:
+      resource_name: bucket_dataride
+      bucket_name: test-bucket-dataride
+      versioning: "true"
+  - aws_s3:
+      bucket_name: test-bucket-dataride2
+  - aws_s3_directory:
+      resource_name: s3_logs_directory
+      bucket: test-bucket-dataride2
+      key: logs
+  - aws_glue_catalog_database:
+      database_name: production_catalog
+  - aws_glue_crawler:
+      database_name: production_catalog
+      crawler_role: role_test_123
+      s3_target_path: s3://my-data-catalog-bucket/production
