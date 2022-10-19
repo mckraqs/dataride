@@ -141,7 +141,7 @@ pycparser = "*"
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -152,7 +152,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 name = "colorama"
 version = "0.4.5"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -1050,7 +1050,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "259a586c0f68c13dde87f1be77a2191abfd7212d6cddfb9a06bbe657182ab233"
+content-hash = "30c721c6e2387780cb46d9fef4c4a155aa840be76358ecd8332d0dfd7a296cd9"
 
 [metadata.files]
 appnope = [
