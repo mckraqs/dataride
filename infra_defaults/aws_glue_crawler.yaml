@@ -1,4 +1,5 @@
 _jinja: true
+_module: main
 crawler_name: glue_crawler
 table_prefix: ""
 s3_target_path: ""

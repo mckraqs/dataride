@@ -19,7 +19,7 @@ def raise_helper(msg: str) -> None:
 
 def prepare_jinja_environment() -> JinjaEnvironment:
     env = JinjaEnvironment()
-    env.globals['raise_error'] = raise_helper
+    env.globals["raise_error"] = raise_helper
     return env
 
 
@@ -41,9 +41,7 @@ def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
     assert len(resource) == 1
 
 
-def update_resource_with_defaults(
-    resource: Dict[str, Dict[str, str]], resource_type: str
-) -> Dict[str, Dict[str, str]]:
+def update_resource_with_defaults(resource: Dict[str, Dict[str, str]], resource_type: str) -> Dict[str, Dict[str, str]]:
     """
     Extra process of updating resource dictionary with default values if possible (in case some of them were skipped),
         especially, creating a resource name for Terraform if wasn't specified
@@ -60,9 +58,7 @@ def update_resource_with_defaults(
 
     # Creating a resource name for Terraform if wasn't specified
     if resource[resource_type].get("resource_name", None) is None:
-        resource[resource_type]["resource_name"] = (
-            resource_type + "_" + str(randint(10**4, 9 * 10**4))
-        )
+        resource[resource_type]["resource_name"] = resource_type + "_" + str(randint(10**4, 9 * 10**4))
 
     return resource
 
@@ -92,9 +88,7 @@ def render_jinja(
     return jinja_template.render(values_dict)
 
 
-def fill_template_values(
-    resource: Dict[str, Dict[str, str]], resource_type: str, resource_template: str
-) -> str:
+def fill_template_values(resource: Dict[str, Dict[str, str]], resource_type: str, resource_template: str) -> str:
     """
     Fills values inside a resource template file,
         in place of any param inside angle brackets: `<`, and `>`,
@@ -111,25 +105,50 @@ def fill_template_values(
     return resource_template
 
 
-def save_infra_setup_code(destination: str, output_main: str, env_main: str) -> None:
+def create_result_dir_structure(destination: str) -> None:
     """
-    Saves infrastructure setup code into the specified location
+    Creates a result directory structure:
+        - `<destination>` directory
+        - Terraform modules directory
     :param destination: where setup should be saved
-    :param output_main: module main output string that contains whole Infrastructure as a Code setup,
-    :param env_main: environment main output string that contains whole Infrastructure as a Code setup
-        TODO: in future, divide it into main/variables/tfvars files, as well as separate modules
     """
     try:
         os.mkdir(destination)
-        os.mkdir(f"{destination}/env")
         os.mkdir(f"{destination}/modules")
-        os.mkdir(f"{destination}/modules/main")
     except OSError as error:
         logging.error(error)
         logging.info("Attempting to save infrastructure setup code in a given location")
 
-    with open(f"{destination}/modules/main/main.tf", "w") as f:
+
+def save_module_setup(destination: str, module: str, output_main: str) -> None:
+    """
+    Saves infrastructure module setup code into the specified location
+    :param destination: where setup should be saved
+    :param module: what module setup to save
+    :param output_main: module main output string that contains whole Infrastructure as a Code setup,
+        TODO: in future, divide it into main/variables/tfvars files, as well as separate modules
+    """
+    try:
+        os.mkdir(f"{destination}/modules/{module}")
+    except OSError as error:
+        logging.error(error)
+        logging.info("Attempting to save infrastructure setup code in a given location")
+
+    with open(f"{destination}/modules/{module}/main.tf", "w") as f:
         f.write(output_main)
+
+
+def save_env_setup(destination: str, env_main: str) -> None:
+    """
+    Saves infrastructure environment setup code into the specified location
+    :param destination: where setup should be saved
+    :param env_main: environment main output string that contains whole Infrastructure as a Code setup
+    """
+    try:
+        os.mkdir(f"{destination}/env")
+    except OSError as error:
+        logging.error(error)
+        logging.info("Attempting to save infrastructure setup code in a given location")
 
     with open(f"{destination}/env/main.tf", "w") as f:
         f.write(env_main)

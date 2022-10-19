@@ -2,12 +2,15 @@ platforms:
   - aws
 resources:
   - aws_s3:
+      _module: storage
       resource_name: bucket_dataride
       bucket_name: test-bucket-dataride
       versioning: "true"
   - aws_s3:
+      _module: storage
       bucket_name: test-bucket-dataride2
   - aws_s3_directory:
+      _module: storage
       resource_name: s3_logs_directory
       bucket: test-bucket-dataride2
       key: logs
