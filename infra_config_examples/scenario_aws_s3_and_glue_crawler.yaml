@@ -8,7 +8,7 @@ resources:
       versioning:
         is_variable: true
         name: dataride_bucket_versioning
-        default_value: "true"
+        default_value: true
         type: bool
   - aws_s3:
       _module: storage
@@ -20,7 +20,7 @@ resources:
       key:
         is_variable: true
         name: logs_directory_key
-        type: str
+        type: string
   - aws_glue_catalog_database:
       database_name: production_catalog
   - aws_glue_crawler:

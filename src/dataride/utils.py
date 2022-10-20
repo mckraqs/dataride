@@ -112,10 +112,14 @@ def fill_template_values(template: str, values_dict: Dict) -> str:
     :return: template with filled values. It shouldn't contain any angle bracket whatsoever after this step
     """
     for param, value in values_dict.items():
-        if type(value) == str or type(value) == bool or value is None:
+        if type(value) == bool or param == "type":
+            template = template.replace(f"<{param}>", f"{str(value).lower()}")
+        elif type(value) == str:
             template = template.replace(f"<{param}>", f'"{str(value)}"')
         elif type(value) == dict and value["is_variable"]:
             template = template.replace(f"<{param}>", f"var.{str(value['name'])}")
+        elif value is None:
+            pass  # do nothing, but don't raise error
         else:
             raise ValueError("Wrong resource parameter value type")
 
