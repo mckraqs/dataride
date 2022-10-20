@@ -5,7 +5,11 @@ resources:
       _module: storage
       resource_name: bucket_dataride
       bucket_name: test-bucket-dataride
-      versioning: "true"
+      versioning:
+        is_variable: true
+        name: dataride_bucket_versioning
+        default_value: "true"
+        type: bool
   - aws_s3:
       _module: storage
       bucket_name: test-bucket-dataride2
@@ -13,7 +17,10 @@ resources:
       _module: storage
       resource_name: s3_logs_directory
       bucket: test-bucket-dataride2
-      key: logs
+      key:
+        is_variable: true
+        name: logs_directory_key
+        type: str
   - aws_glue_catalog_database:
       database_name: production_catalog
   - aws_glue_crawler:
