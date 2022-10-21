@@ -1,9 +1,13 @@
-{% if 'aws' in platforms -%}
-provider "aws" {
-  region = "eu-central-1" # TODO: move hardcoded parameter to the variable with default value
+{%- for provider in providers -%}
+{%- for provider_name, provider_params in provider.items() -%}
+provider "{{ provider_name }}" {
+  {%- for param_name, param_value in provider_params.items() %}
+  {{ param_name }} = "{{ param_value }}"
+  {%- endfor %}
 }
-{% else %}
-{% endif %}
+{% endfor %}
+{% endfor %}
+
 
 {%- for module_name, module_info in modules.items() %}
 module "{{ module_name }}" {
