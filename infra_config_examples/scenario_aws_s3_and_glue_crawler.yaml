@@ -1,5 +1,6 @@
-platforms:
-  - aws
+providers:
+  - aws:
+      region: eu-central-1
 resources:
   - aws_s3:
       _module: storage

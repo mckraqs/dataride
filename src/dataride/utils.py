@@ -16,7 +16,7 @@ def format_terraform_code(destination: str) -> None:
     Executes `terraform fmt` in a destination directory
     :param destination: directory location for infrastructure setup generation
     """
-    subprocess.run(["terraform", "fmt", "-recursive", destination])
+    subprocess.run(["terraform", "fmt", "-recursive", "-list=false", destination])
 
 
 def prepare_jinja_environment() -> JinjaEnvironment:
@@ -63,6 +63,29 @@ def load_template(template_name: str) -> str:
     return open(f"infra_templates/{template_name}.tf").read()
 
 
+def run_config_check(config: Dict) -> None:
+    """
+    Checks basic information about dataride config dictionary
+    :param config: config dictionary loaded from a yaml file
+    """
+    assert all(type(provider) == dict for provider in config["providers"])
+
+    # Provider checks
+    provider_names_list = []
+    for provider in config["providers"]:
+        provider_name = next(iter(provider))
+        provider_params = provider[provider_name]
+
+        # Checking for duplicates
+        if provider_name in provider_names_list:
+            raise KeyError("Provider has been duplicated. Please verify your config file")
+        else:
+            provider_names_list.append(provider_name)
+
+        if provider_name == "aws":
+            assert "region" in provider_params.keys()
+
+
 def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
     """
     Checks basic information about the resource
@@ -71,12 +94,15 @@ def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
     assert len(resource) == 1
 
 
-def update_resource_dict_with_defaults(resource_dict: Dict[str, str], resource_type: str) -> Dict[str, str]:
+def update_resource_dict_with_defaults(
+    resource_dict: Dict[str, str], resource_type: str, create_resource_name: bool = True
+) -> Dict:
     """
     Extra process of updating resource dictionary with default values if possible (in case some of them were skipped),
         especially, creating a resource name for Terraform in case it wasn't specified
     :param resource_dict: dictionary with details of the current resource that is being prepared
     :param resource_type: name of the resource to create, e.g. aws_glue_crawler
+    :param create_resource_name: whether to create a resource name (not applicable for main config update)
     :return: resource dictionary with default values appended where possible
     """
     # Updating resource object with default values if applicable
@@ -86,7 +112,7 @@ def update_resource_dict_with_defaults(resource_dict: Dict[str, str], resource_t
         resource_dict.update(resource_defaults)
 
     # Creating a resource name for Terraform if wasn't specified
-    if resource_dict.get("resource_name", None) is None:
+    if create_resource_name and resource_dict.get("resource_name", None) is None:
         resource_dict["resource_name"] = resource_type + "_" + str(randint(10**4, 9 * 10**4))
 
     return resource_dict
