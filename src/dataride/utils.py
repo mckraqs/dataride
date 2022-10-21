@@ -11,6 +11,19 @@ from jinja2 import Environment as JinjaEnvironment
 VARIABLES_DEFAULT_DICT = {"default_value": None, "description": ""}
 
 
+def log_if_verbose(message: str, verbose: bool) -> None:
+    """
+    Checks whether a programme is running in verbose mode and, if applicable,
+        logs information according to the logging level
+    :param message: message string to be logged
+    :param verbose: whether to print more outputs
+    """
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("dr")
+    if verbose:
+        logger.info(message)
+
+
 def format_terraform_code(destination: str) -> None:
     """
     Executes `terraform fmt` in a destination directory
@@ -63,11 +76,14 @@ def load_template(template_name: str) -> str:
     return open(f"infra_templates/{template_name}.tf").read()
 
 
-def run_config_check(config: Dict) -> None:
+def run_config_check(config: Dict, verbose: bool) -> None:
     """
     Checks basic information about dataride config dictionary
     :param config: config dictionary loaded from a yaml file
+    :param verbose: whether to print more outputs
     """
+    log_if_verbose("\tRunning main config file check...", verbose)
+
     assert all(type(provider) == dict for provider in config["providers"])
 
     # Provider checks
@@ -82,16 +98,25 @@ def run_config_check(config: Dict) -> None:
         else:
             provider_names_list.append(provider_name)
 
+        # AWS provider checks
         if provider_name == "aws":
             assert "region" in provider_params.keys()
 
+    log_if_verbose("\tConfig check passed!", verbose)
 
-def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
+
+def run_resource_check(resource: Dict[str, Dict[str, str]], resource_type: str, verbose: bool) -> None:
     """
-    Checks basic information about the resource
+    Checks basic information about the resource.
     :param resource: current resource that is being prepared (dictionary loaded from yaml template file)
+    :param resource_type: name of the resource to create, e.g. aws_glue_crawler
+    :param verbose: whether to print more outputs
     """
+    log_if_verbose(f"\tRunning resource config check for {resource_type}...", verbose)
+
     assert len(resource) == 1
+
+    log_if_verbose("\tResource config check passed!", verbose)
 
 
 def update_resource_dict_with_defaults(
@@ -207,14 +232,17 @@ def create_result_dir_structure(destination: str) -> None:
         exit(1)
 
 
-def save_module_setup(destination: str, module: str, module_output: Dict[str, str]) -> None:
+def save_module_setup(destination: str, module: str, module_output: Dict[str, str], verbose: bool) -> None:
     """
     Saves infrastructure module setup code into the specified location
     If a `module` directory exists, function breaks
     :param destination: directory location for infrastructure setup generation
     :param module: what module setup to save
     :param module_output: module main output string that contains whole Infrastructure as a Code setup
+    :param verbose: whether to print more outputs
     """
+    log_if_verbose(f"\tSaving module: {module}...", verbose)
+
     try:
         os.mkdir(f"{destination}/modules/{module}")
     except OSError as error:
@@ -228,23 +256,31 @@ def save_module_setup(destination: str, module: str, module_output: Dict[str, st
         with open(f"{destination}/modules/{module}/var.tf", "w") as f:
             f.write(module_output["var.tf"])
 
+    log_if_verbose(f"\tModule saved!", verbose)
 
-def save_env_setup(destination: str, env_dict: Dict) -> None:
+
+def save_env_setup(destination: str, env_name: str, env_dict: Dict, verbose: bool) -> None:
     """
     Saves infrastructure environment setup code into the specified location
     If an environment directory exists, function breaks
     :param destination: directory location for infrastructure setup generation
+    :param env_name: name of the environment to save
     :param env_dict: environment dictionary containing information including main.tf and var.tf strings
+    :param verbose: whether to print more outputs
     """
+    log_if_verbose(f"\tSaving environment: {env_name}...", verbose)
+
     try:
-        os.mkdir(f"{destination}")
+        os.mkdir(f"{destination}/{env_name}")
     except OSError as error:
         logging.error(error)
         exit(1)
 
-    with open(f"{destination}/main.tf", "w") as f:
+    with open(f"{destination}/{env_name}/main.tf", "w") as f:
         f.write(env_dict["main.tf"])
 
     if env_dict["var.tf"]:
-        with open(f"{destination}/var.tf", "w") as f:
+        with open(f"{destination}/{env_name}/var.tf", "w") as f:
             f.write(env_dict["var.tf"])
+
+    log_if_verbose(f"\tEnvironment saved!", verbose)

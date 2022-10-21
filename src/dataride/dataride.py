@@ -3,6 +3,7 @@ from collections import defaultdict
 import click
 
 from .utils import (
+    log_if_verbose,
     format_terraform_code,
     prepare_jinja_environment,
     load_config,
@@ -28,31 +29,38 @@ def main():
 
 
 @main.command()
-@click.option("--config_path", "-c", type=str)
-@click.option("--destination", "-d", type=str)
-@click.option("--fmt", type=bool, default=True)
-def create(
-    config_path: str,
-    destination: str,
-    fmt: bool = True,
-) -> None:
+@click.option("--config_path", "-c", type=str, help="Where YAML data platform config setup file is stored")
+@click.option("--destination", "-d", type=str, help="Where infrastructure code should be saved")
+@click.option(
+    "--fmt",
+    type=bool,
+    default=True,
+    help="Whether to execute `terraform fmt` on a destination directory after infrastructure generation",
+)
+@click.option("--verbose", "-v", is_flag=True, type=bool, default=False, help="Whether to print more outputs")
+def create(config_path: str, destination: str, fmt: bool = True, verbose: bool = False) -> None:
     """
     CLI command to generate data platform infrastructure code out of provided template
     :param config_path: where YAML data platform config setup file is stored
     :param destination: where infrastructure code should be saved
     :param fmt: whether to execute `terraform fmt` on a destination directory after infrastructure generation
+    :param verbose: whether to print more outputs
     """
+    log_if_verbose("Starting a dataride!", verbose)
+
     jinja_environment = prepare_jinja_environment()
     config_main = load_config(config_path, is_main=True)
     config_main = update_resource_dict_with_defaults(config_main, "config_main", create_resource_name=False)
     output_dict = defaultdict(lambda: {"main.tf": "", "var.tf": ""})
 
-    run_config_check(config_main)
+    run_config_check(config_main, verbose)
 
     for resource in config_main["resources"]:
 
-        run_resource_check(resource)
         resource_type = next(iter(resource))
+
+        log_if_verbose(f"Processing resource: {resource_type}", verbose)
+        run_resource_check(resource, resource_type, verbose)
 
         resource_updated = update_resource_dict_with_defaults(resource[resource_type], resource_type)
         resource_module = resource_updated["_module"]
@@ -80,12 +88,20 @@ def create(
         config_main["modules"][resource_module]["vars_with_def"] += resource_variables[1]
         config_main["modules"][resource_module]["vars_no_def"] += resource_variables[2]
 
+        log_if_verbose(
+            f"\tResource variables: with default values - {len(resource_variables[1])},"
+            f" no default values - {len(resource_variables[2])}",
+            verbose,
+        )
+
+    log_if_verbose("Saving infrastructure to passed location", verbose)
     create_result_dir_structure(destination)
 
+    log_if_verbose("Saving modules", verbose)
     for module in output_dict.keys():
-        save_module_setup(destination, module, output_dict[module])
+        save_module_setup(destination, module, output_dict[module], verbose)
 
-    # Saving environments
+    log_if_verbose("Saving environments", verbose)
     for env in config_main["envs"]:
         env_name = next(iter(env))
         env_template = load_template("env_default")
@@ -95,7 +111,8 @@ def create(
         env[env_name]["main.tf"] = render_jinja(
             env_template, {**config_main, **{"env": {**env[env_name]}}}, jinja_environment
         )
-        save_env_setup(f"{destination}/{env_name}", env[env_name])
+        save_env_setup(destination, env_name, env[env_name], verbose)
 
     if fmt:
+        log_if_verbose("Formatting Terraform code", verbose)
         format_terraform_code(destination)
