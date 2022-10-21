@@ -6,3 +6,5 @@ backend:
     region: "ENTER YOUR VARIABLE VALUE HERE"
     dynamodb_table: "ENTER YOUR VARIABLE VALUE HERE" # LockID as String for partition key
     encrypt: true
+envs:
+  - prod:
