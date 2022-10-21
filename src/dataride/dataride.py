@@ -86,11 +86,16 @@ def create(
         save_module_setup(destination, module, output_dict[module])
 
     # Saving environments
-    env_template = load_template("env_default")
-    env_template = render_jinja(env_template, config_main, jinja_environment)
     for env in config_main["envs"]:
         env_name = next(iter(env))
-        save_env_setup(f"{destination}/{env_name}", env_template)
+        env_template = load_template("env_default")
+        env[env_name]["variables"] = [k for k, v in env[env_name].items() if v.get("is_variable", False)]
+
+        env[env_name]["var.tf"] = fetch_resource_variables(env[env_name], jinja_environment)[0]
+        env[env_name]["main.tf"] = render_jinja(
+            env_template, {**config_main, **{"env": {**env[env_name]}}}, jinja_environment
+        )
+        save_env_setup(f"{destination}/{env_name}", env[env_name])
 
     if fmt:
         format_terraform_code(destination)

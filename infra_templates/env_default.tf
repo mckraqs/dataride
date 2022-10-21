@@ -14,7 +14,11 @@ module "{{ module_name }}" {
   source = "./../modules/{{ module_name }}"
   {%- if module_info['vars_no_def'] %}
   {% for var in module_info['vars_no_def'] -%}
+  {% if var not in env['variables'] -%}
   {{ var }} = "<ENTER YOUR VARIABLE VALUE HERE>"
+  {% else %}
+  {{ var }} = var.{{ var }}
+  {%- endif %}
   {%- endfor %}
   {%- endif %}
 }

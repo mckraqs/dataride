@@ -1,6 +1,17 @@
 providers:
   - aws:
       region: eu-central-1
+envs:
+  - prod:
+      logs_directory_key:
+        is_variable: true
+        name: logs_directory_key
+        default_value: "s3://aws-bucket-dataride/logs"
+        type: string
+      account_id:
+        is_variable: true
+        name: account_id
+        type: string
 resources:
   - aws_s3:
       _module: storage
