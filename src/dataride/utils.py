@@ -62,27 +62,25 @@ def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
     assert len(resource) == 1
 
 
-def update_resource_dict_with_defaults(
-    resource: Dict[str, Dict[str, str]], resource_type: str
-) -> Dict[str, Dict[str, str]]:
+def update_resource_dict_with_defaults(resource_dict: Dict[str, str], resource_type: str) -> Dict[str, str]:
     """
     Extra process of updating resource dictionary with default values if possible (in case some of them were skipped),
         especially, creating a resource name for Terraform in case it wasn't specified
-    :param resource: current resource that is being prepared (dictionary loaded from yaml template file)
+    :param resource_dict: dictionary with details of the current resource that is being prepared
     :param resource_type: name of the resource to create, e.g. aws_glue_crawler
     :return: resource dictionary with default values appended where possible
     """
     # Updating resource object with default values if applicable
     resource_defaults = load_config(f"./infra_defaults/{resource_type}.yaml")
-    resource_defaults = {k: v for k, v in resource_defaults.items() if k not in resource[resource_type].keys()}
+    resource_defaults = {k: v for k, v in resource_defaults.items() if k not in resource_dict.keys()}
     if resource_defaults:
-        resource[resource_type].update(resource_defaults)
+        resource_dict.update(resource_defaults)
 
     # Creating a resource name for Terraform if wasn't specified
-    if resource[resource_type].get("resource_name", None) is None:
-        resource[resource_type]["resource_name"] = resource_type + "_" + str(randint(10**4, 9 * 10**4))
+    if resource_dict.get("resource_name", None) is None:
+        resource_dict["resource_name"] = resource_type + "_" + str(randint(10**4, 9 * 10**4))
 
-    return resource
+    return resource_dict
 
 
 def render_jinja(
