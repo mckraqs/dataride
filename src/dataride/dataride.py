@@ -85,10 +85,12 @@ def create(
     for module in output_dict.keys():
         save_module_setup(destination, module, output_dict[module])
 
-    # TODO: Add different environments creation
-    env_main = load_template("env_main")
-    env_main = render_jinja(env_main, config_main, jinja_environment)
-    save_env_setup(destination, env_main)
+    # Saving environments
+    env_template = load_template("env_default")
+    env_template = render_jinja(env_template, config_main, jinja_environment)
+    for env in config_main["envs"]:
+        env_name = next(iter(env))
+        save_env_setup(f"{destination}/{env_name}", env_template)
 
     if fmt:
         format_terraform_code(destination)

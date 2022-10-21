@@ -237,10 +237,10 @@ def save_env_setup(destination: str, env_main: str) -> None:
     :param env_main: environment main output string that contains whole Infrastructure as a Code setup
     """
     try:
-        os.mkdir(f"{destination}/env")
+        os.mkdir(f"{destination}")
     except OSError as error:
         logging.error(error)
         exit(1)
 
-    with open(f"{destination}/env/main.tf", "w") as f:
+    with open(f"{destination}/main.tf", "w") as f:
         f.write(env_main)
