@@ -94,12 +94,15 @@ def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
     assert len(resource) == 1
 
 
-def update_resource_dict_with_defaults(resource_dict: Dict[str, str], resource_type: str) -> Dict[str, str]:
+def update_resource_dict_with_defaults(
+    resource_dict: Dict[str, str], resource_type: str, create_resource_name: bool = True
+) -> Dict:
     """
     Extra process of updating resource dictionary with default values if possible (in case some of them were skipped),
         especially, creating a resource name for Terraform in case it wasn't specified
     :param resource_dict: dictionary with details of the current resource that is being prepared
     :param resource_type: name of the resource to create, e.g. aws_glue_crawler
+    :param create_resource_name: whether to create a resource name (not applicable for main config update)
     :return: resource dictionary with default values appended where possible
     """
     # Updating resource object with default values if applicable
@@ -109,7 +112,7 @@ def update_resource_dict_with_defaults(resource_dict: Dict[str, str], resource_t
         resource_dict.update(resource_defaults)
 
     # Creating a resource name for Terraform if wasn't specified
-    if resource_dict.get("resource_name", None) is None:
+    if create_resource_name and resource_dict.get("resource_name", None) is None:
         resource_dict["resource_name"] = resource_type + "_" + str(randint(10**4, 9 * 10**4))
 
     return resource_dict

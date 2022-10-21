@@ -44,6 +44,7 @@ def create(
     """
     jinja_environment = prepare_jinja_environment()
     config_main = load_config(config_path, is_main=True)
+    config_main = update_resource_dict_with_defaults(config_main, "config_main", create_resource_name=False)
     output_dict = defaultdict(lambda: {"main.tf": "", "var.tf": ""})
 
     run_config_check(config_main)
