@@ -1,6 +1,7 @@
 import os
 import yaml
 import logging
+import subprocess
 from random import randint
 from typing import Dict, Tuple, List
 
@@ -8,6 +9,14 @@ from jinja2 import Environment as JinjaEnvironment
 
 # TODO: Move it somewhere else in the future
 VARIABLES_DEFAULT_DICT = {"default_value": None, "description": ""}
+
+
+def format_terraform_code(destination: str) -> None:
+    """
+    Executes `terraform fmt` in a destination directory
+    :param destination: directory location for infrastructure setup generation
+    """
+    subprocess.run(["terraform", "fmt", "-recursive", destination])
 
 
 def prepare_jinja_environment() -> JinjaEnvironment:
@@ -162,7 +171,7 @@ def create_result_dir_structure(destination: str) -> None:
         - `destination` directory
         - Terraform modules directory
     If a `destination` directory exists, function breaks
-    :param destination: where setup should be saved
+    :param destination: directory location for infrastructure setup generation
     """
     try:
         os.mkdir(destination)
@@ -176,7 +185,7 @@ def save_module_setup(destination: str, module: str, module_output: Dict[str, st
     """
     Saves infrastructure module setup code into the specified location
     If a `module` directory exists, function breaks
-    :param destination: where setup should be saved
+    :param destination: directory location for infrastructure setup generation
     :param module: what module setup to save
     :param module_output: module main output string that contains whole Infrastructure as a Code setup
     """
@@ -198,7 +207,7 @@ def save_env_setup(destination: str, env_main: str) -> None:
     """
     Saves infrastructure environment setup code into the specified location
     If an environment directory exists, function breaks
-    :param destination: where setup should be saved
+    :param destination: directory location for infrastructure setup generation
     :param env_main: environment main output string that contains whole Infrastructure as a Code setup
     """
     try:
