@@ -46,20 +46,23 @@ def create(
         run_resource_check(resource)
         resource_type = next(iter(resource))
 
-        resource_updated = update_resource_dict_with_defaults(resource, resource_type)
-        resource_module = resource_updated[resource_type]["_module"]
+        resource_updated = update_resource_dict_with_defaults(resource[resource_type], resource_type)
+        resource_module = resource_updated["_module"]
 
+        # Rendering template if applicable
         resource_template = load_template(resource_type)
         if resource[resource_type]["_jinja"]:
-            resource_template = render_jinja(resource_template, resource_updated[resource_type], jinja_environment)
+            resource_template = render_jinja(resource_template, resource_updated, jinja_environment)
 
-        resource_template_filled = fill_template_values(resource_template, resource_updated[resource_type])
+        # Filling template with resource values for main.tf
+        resource_template_filled = fill_template_values(resource_template, resource_updated)
         output_dict[resource_module]["main.tf"] += resource_template_filled + "\n" * 2
 
-        resource_variables = fetch_resource_variables(resource_updated[resource_type], jinja_environment)
+        # Filling template with resource values for var.tf
+        resource_variables = fetch_resource_variables(resource_updated, jinja_environment)
         output_dict[resource_module]["var.tf"] += resource_variables[0]
 
-        # Adding module information to the config dictionary
+        # Adding module information to the config dictionary for modules instantiating generation
         if resource_module not in config_main["modules"].keys():
             config_main["modules"][resource_module] = {
                 "vars_with_def": [],
