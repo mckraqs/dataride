@@ -229,12 +229,12 @@ def save_module_setup(destination: str, module: str, module_output: Dict[str, st
             f.write(module_output["var.tf"])
 
 
-def save_env_setup(destination: str, env_main: str) -> None:
+def save_env_setup(destination: str, env_dict: Dict) -> None:
     """
     Saves infrastructure environment setup code into the specified location
     If an environment directory exists, function breaks
     :param destination: directory location for infrastructure setup generation
-    :param env_main: environment main output string that contains whole Infrastructure as a Code setup
+    :param env_dict: environment dictionary containing information including main.tf and var.tf strings
     """
     try:
         os.mkdir(f"{destination}")
@@ -243,4 +243,8 @@ def save_env_setup(destination: str, env_main: str) -> None:
         exit(1)
 
     with open(f"{destination}/main.tf", "w") as f:
-        f.write(env_main)
+        f.write(env_dict["main.tf"])
+
+    if env_dict["var.tf"]:
+        with open(f"{destination}/var.tf", "w") as f:
+            f.write(env_dict["var.tf"])
