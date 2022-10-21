@@ -7,6 +7,7 @@ from .utils import (
     prepare_jinja_environment,
     load_config,
     run_resource_check,
+    run_config_check,
     update_resource_dict_with_defaults,
     load_template,
     render_jinja,
@@ -44,6 +45,8 @@ def create(
     jinja_environment = prepare_jinja_environment()
     config_main = load_config(config_path, is_main=True)
     output_dict = defaultdict(lambda: {"main.tf": "", "var.tf": ""})
+
+    run_config_check(config_main)
 
     for resource in config_main["resources"]:
 

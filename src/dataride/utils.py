@@ -16,7 +16,7 @@ def format_terraform_code(destination: str) -> None:
     Executes `terraform fmt` in a destination directory
     :param destination: directory location for infrastructure setup generation
     """
-    subprocess.run(["terraform", "fmt", "-recursive", destination])
+    subprocess.run(["terraform", "fmt", "-recursive", "-list=false", destination])
 
 
 def prepare_jinja_environment() -> JinjaEnvironment:
@@ -61,6 +61,29 @@ def load_template(template_name: str) -> str:
     :return: string containing loaded template file
     """
     return open(f"infra_templates/{template_name}.tf").read()
+
+
+def run_config_check(config: Dict) -> None:
+    """
+    Checks basic information about dataride config dictionary
+    :param config: config dictionary loaded from a yaml file
+    """
+    assert all(type(provider) == dict for provider in config["providers"])
+
+    # Provider checks
+    provider_names_list = []
+    for provider in config["providers"]:
+        provider_name = next(iter(provider))
+        provider_params = provider[provider_name]
+
+        # Checking for duplicates
+        if provider_name in provider_names_list:
+            raise KeyError("Provider has been duplicated. Please verify your config file")
+        else:
+            provider_names_list.append(provider_name)
+
+        if provider_name == "aws":
+            assert "region" in provider_params.keys()
 
 
 def run_resource_check(resource: Dict[str, Dict[str, str]]) -> None:
