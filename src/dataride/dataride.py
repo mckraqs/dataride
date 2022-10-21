@@ -3,6 +3,7 @@ from collections import defaultdict
 import click
 
 from .utils import (
+    format_terraform_code,
     prepare_jinja_environment,
     load_config,
     run_resource_check,
@@ -28,14 +29,17 @@ def main():
 @main.command()
 @click.option("--config_path", "-c", type=str)
 @click.option("--destination", "-d", type=str)
+@click.option("--fmt", type=bool, default=True)
 def create(
     config_path: str,
     destination: str,
+    fmt: bool = True,
 ) -> None:
     """
     CLI command to generate data platform infrastructure code out of provided template
     :param config_path: where YAML data platform config setup file is stored
     :param destination: where infrastructure code should be saved
+    :param fmt: whether to execute `terraform fmt` on a destination directory after infrastructure generation
     """
     jinja_environment = prepare_jinja_environment()
     config_main = load_config(config_path, is_main=True)
@@ -81,3 +85,6 @@ def create(
     env_main = load_template("env_main")
     env_main = render_jinja(env_main, config_main, jinja_environment)
     save_env_setup(destination, env_main)
+
+    if fmt:
+        format_terraform_code(destination)
