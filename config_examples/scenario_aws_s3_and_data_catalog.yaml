@@ -3,6 +3,13 @@
 # Creates a structure that consists of:
 # - AWS S3 bucket
 #   - dataride-bucket-data
+# - AWS S3 subdirectories
+#   - dataride-bucket-data/bronze
+#   - dataride-bucket-data/silver
+#   - dataride-bucket-data/gold
+# - AWS Glue Data Catalog
+#   - database: dc_gold
+#   - crawler: glue_dc_crawler_gold
 
 providers:
   - aws:
@@ -33,6 +40,7 @@ resources:
       database_name: dc_gold
   - aws_glue_crawler:
       _module: glue
+      resource_name: glue_dc_crawler_gold
       database_name: dc_gold
       crawler_role: dataride::arn:iam:123456
       table_prefix: gold_
