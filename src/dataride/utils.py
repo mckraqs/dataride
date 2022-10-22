@@ -284,3 +284,24 @@ def save_env_setup(destination: str, env_name: str, env_dict: Dict, verbose: boo
             f.write(env_dict["var.tf"])
 
     log_if_verbose(f"\tEnvironment saved!", verbose)
+
+
+def prepare_action_required(
+    config_main: Dict,
+    jinja_environment: JinjaEnvironment,
+    destination: str,
+    action_required_path: str = "assets/action_required.md",
+) -> None:
+    """
+    Prepares action-required document for users after infrastructure generation
+    :param config_main: main dataride configuration dictionary
+    :param jinja_environment: Jinja Python framework environment to process template
+    :param destination: directory location for infrastructure setup generation
+    :param action_required_path: location where action required template document is stored
+    :return:
+    """
+    with open(action_required_path) as f:
+        action_required_rendered = render_jinja(f.read(), config_main, jinja_environment)
+
+    with open(f"{destination}/action_required.md", "w") as f:
+        f.write(action_required_rendered)

@@ -17,6 +17,7 @@ from .utils import (
     save_module_setup,
     save_env_setup,
     fetch_resource_variables,
+    prepare_action_required,
 )
 
 
@@ -102,17 +103,21 @@ def create(config_path: str, destination: str, fmt: bool = True, verbose: bool =
         save_module_setup(destination, module, output_dict[module], verbose)
 
     log_if_verbose("Saving environments", verbose)
-    for env in config_main["envs"]:
-        env_name = next(iter(env))
+    for env_name, env_config in config_main["envs"].items():
         env_template = load_template("env_default")
-        env[env_name]["variables"] = [k for k, v in env[env_name].items() if v.get("is_variable", False)]
+        if env_config is None:
+            env_config = {"_empty": "_empty"}
+        env_config["variables"] = [k for k, v in env_config.items() if type(v) == dict and v.get("is_variable", False)]
 
-        env[env_name]["var.tf"] = fetch_resource_variables(env[env_name], jinja_environment)[0]
-        env[env_name]["main.tf"] = render_jinja(
-            env_template, {**config_main, **{"env": {**env[env_name]}}}, jinja_environment
+        env_config["var.tf"] = fetch_resource_variables(env_config, jinja_environment)[0]
+        env_config["main.tf"] = render_jinja(
+            env_template, {**config_main, **{"env": {**env_config}}}, jinja_environment
         )
-        save_env_setup(destination, env_name, env[env_name], verbose)
+        config_main["envs"][env_name] = env_config
+        save_env_setup(destination, env_name, env_config, verbose)
 
     if fmt:
         log_if_verbose("Formatting Terraform code", verbose)
         format_terraform_code(destination)
+
+    prepare_action_required(config_main, jinja_environment, destination)
