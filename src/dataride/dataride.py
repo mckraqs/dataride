@@ -110,6 +110,11 @@ def create(config_path: str, destination: str, fmt: bool = True, verbose: bool =
         env_config["variables"] = [k for k, v in env_config.items() if type(v) == dict and v.get("is_variable", False)]
 
         env_config["var.tf"] = fetch_resource_variables(env_config, jinja_environment)[0]
+        if env_config.get("backend", False):
+            config_main["backend"] = env_config["backend"]
+        else:
+            config_main["backend"] = config_main["default_backend"]
+
         env_config["main.tf"] = render_jinja(
             env_template, {**config_main, **{"env": {**env_config}}}, jinja_environment
         )

@@ -198,7 +198,7 @@ def fetch_resource_variables(
 
     # Only iterating over parameters which were specified as variables in the main config file
     for param, value in resource_dict.items():
-        if type(value) == dict and value["is_variable"]:
+        if type(value) == dict and value.get("is_variable", False):
             missing_defaults = {k: v for k, v in VARIABLES_DEFAULT_DICT.items() if k not in value.keys()}
             value.update(missing_defaults)
 
