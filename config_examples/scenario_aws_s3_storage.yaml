@@ -1,0 +1,42 @@
+# Sample AWS S3 storage structure
+#
+# Creates a structure that consists of:
+# - AWS S3 buckets
+#   - dataride-bucket-data
+#   - dataride-bucket-logs
+# - AWS S3 subdirectory
+#   - dataride-bucket-logs/main-logs
+
+providers:
+  - aws:
+      region: eu-central-1
+envs:
+  prod:
+    data_bucket_versioning:
+      is_variable: true
+      name: data_bucket_versioning
+      type: string
+  test:
+    data_bucket_versioning:
+      is_variable: true
+      name: data_bucket_versioning
+      default_value: false
+      type: string
+resources:
+  - aws_s3:
+      _module: storage
+      resource_name: data_bucket
+      bucket_name: dataride-bucket-data
+      versioning:
+        is_variable: true
+        name: data_bucket_versioning
+        type: bool
+  - aws_s3:
+      _module: storage
+      resource_name: logs_bucket
+      bucket_name: dataride-bucket-logs
+  - aws_s3_directory:
+      _module: storage
+      resource_name: s3_logs_directory
+      bucket: dataride-bucket-logs
+      key: "main-logs"
