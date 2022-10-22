@@ -36,4 +36,6 @@ Below you can find generated list of steps you need to take to fully make use of
     {{ ' ' }}- no variables to check
     {% endif -%}
     {% endfor %}
+* **Initialize the environments** - before running `terraform plan/apply`, for each environment execute `terraform init` to fetch all the necessary TF files
+
 Happy further development!
