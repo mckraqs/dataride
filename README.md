@@ -16,7 +16,7 @@ The underlying logic makes a heavy use of Terraform and Jinja templating. Theref
 Below you can find some examples of running `dataride` CLI, using config examples that were prepared inside `infra_config_examples/` directory
 
 ```
-dataride create -c infra_config_examples/scenario_aws_s3_and_glue_crawler.yaml -d results/infra_s3_and_glue
+dataride create -c config_examples/scenario_aws_s3_and_glue_crawler.yaml -d results/infra_s3_and_glue
 ```
 
 ## Caution
