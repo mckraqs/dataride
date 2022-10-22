@@ -16,12 +16,17 @@ envs:
       is_variable: true
       name: data_bucket_versioning
       type: string
+    # Backend definition skipped on purpose, to see default one
   test:
     data_bucket_versioning:
       is_variable: true
       name: data_bucket_versioning
       default_value: false
       type: string
+    backend:
+      type: local
+      options:
+        path: "relative/path/to/terraform.tfstate"
 resources:
   - aws_s3:
       _module: storage
