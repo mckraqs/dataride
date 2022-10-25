@@ -181,7 +181,10 @@ def fill_template_values(template: str, values_dict: Dict) -> str:
         if type(value) == bool or param == "type":
             template = template.replace(f"<{param}>", f"{str(value).lower()}")
         elif type(value) == str:
-            template = template.replace(f"<{param}>", f'"{str(value)}"')
+            if value.startswith("_"):
+                template = template.replace(f"<{param}>", f"{str(value)[1:]}")
+            else:
+                template = template.replace(f"<{param}>", f'"{str(value)}"')
         elif type(value) == int or type(value) == float:
             template = template.replace(f"<{param}>", f"{str(value)}")
         elif type(value) == dict and value["is_variable"]:

@@ -26,7 +26,7 @@ resources:
   - aws_subnet:
       _module: network
       resource_name: public_subnet_1
-      vpc_id: aws_vpc.main_vpc.id
+      vpc_id: _aws_vpc.main_vpc.id
       availability_zone: eu-central-1a
       subnet_cidr_block:
         is_variable: true
@@ -36,7 +36,7 @@ resources:
   - aws_subnet:
       _module: network
       resource_name: public_subnet_2
-      vpc_id: aws_vpc.main_vpc.id
+      vpc_id: _aws_vpc.main_vpc.id
       availability_zone: eu-central-1b
       subnet_cidr_block:
         is_variable: true
@@ -46,7 +46,7 @@ resources:
   - aws_subnet:
       _module: network
       resource_name: private_subnet_1
-      vpc_id: aws_vpc.main_vpc.id
+      vpc_id: _aws_vpc.main_vpc.id
       availability_zone: eu-central-1a
       subnet_cidr_block:
         is_variable: true
@@ -56,7 +56,7 @@ resources:
   - aws_subnet:
       _module: network
       resource_name: private_subnet_2
-      vpc_id: aws_vpc.main_vpc.id
+      vpc_id: _aws_vpc.main_vpc.id
       availability_zone: eu-central-1b
       subnet_cidr_block:
         is_variable: true
