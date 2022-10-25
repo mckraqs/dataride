@@ -1,0 +1,10 @@
+_jinja: false
+_module: main
+allocation_id:
+  is_variable: true
+  name: allocation_id
+  type: string
+subnet_id:
+  is_variable: true
+  name: subnet_id
+  type: string

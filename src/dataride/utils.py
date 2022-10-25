@@ -55,6 +55,7 @@ def prepare_jinja_environment() -> JinjaEnvironment:
     env = JinjaEnvironment()
     env.globals["raise_error"] = raise_helper
     env.globals["intersection"] = intersection
+    env.filters["any"] = any
     return env
 
 

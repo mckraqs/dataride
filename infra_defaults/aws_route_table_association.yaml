@@ -1,0 +1,10 @@
+_jinja: true
+_module: main
+route_table_id:
+  is_variable: true
+  name: route_table_id
+  type: string
+subnet_id:
+  is_variable: true
+  name: subnet_id
+  type: string

@@ -1,0 +1,18 @@
+_jinja: false
+_module: main
+vpc_id:
+  is_variable: true
+  name: vpc_id
+  type: string
+service_name:
+  is_variable: true
+  name: service_name
+  type: string
+endpoint_type:
+  is_variable: true
+  name: endpoint_type
+  type: string
+route_table_ids:
+  is_variable: true
+  name: route_table_ids
+  type: list(string)
