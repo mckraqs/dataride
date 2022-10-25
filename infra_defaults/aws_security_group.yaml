@@ -1,6 +1,6 @@
 _jinja: true
 _module: main
-name: "security-group-dataride"
+sg_name: "security-group-dataride"
 description: "Security group created by dataride."
 vpc_id:
   is_variable: true
