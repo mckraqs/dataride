@@ -1,0 +1,7 @@
+_jinja: false
+_module: main
+is_in_vpc: true
+subnet_vpc_id:
+  is_variable: true
+  name: subnet_vpc_id
+  type: string
