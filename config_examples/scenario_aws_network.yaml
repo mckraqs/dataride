@@ -8,8 +8,9 @@
 # - AWS NAT Gateways (1 for each private subnet)
 # - 3 AWS Route Tables (1 public and 2 private)
 # - AWS Security Group with rules:
-#   - egress self-referencing rule for TCP protocol (0 for both ingress and egress)
-#   - ingress rule for HTTPS protocol (443 for both ingress and egress)
+#   - egress self-referencing rule for TCP protocol (port 0 for both ingress and egress)
+#   - ingress rule for HTTPS protocol (port 443 for both ingress and egress)
+#   - ingress rule for Redshift (TCP protocol, port 5439 for both ingress and egress)
 
 providers:
   - aws:
@@ -141,4 +142,14 @@ resources:
       type: ingress
       from_port: 443
       to_port: 443
+      protocol: tcp
+      prefix_list_ids: [_aws_vpc_endpoint.vpc_storage_gateway.prefix_list_id]
+  - aws_security_group_rule:
+      _module: network
+      resource_name: sg_rule_redshift
+      security_group_id: _aws_security_group.main_sg.id
+      source_security_group_id: _aws_security_group.main_sg.id
+      type: ingress
+      from_port: 5439
+      to_port: 5439
       protocol: tcp
