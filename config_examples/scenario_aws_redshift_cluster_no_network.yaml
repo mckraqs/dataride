@@ -1,0 +1,22 @@
+# Sample AWS Redshift Data Warehouse cluster setup
+#
+# Creates a structure that consists of:
+# - AWS Redshift cluster subnet group
+# - AWS Redshift cluster
+
+providers:
+  - aws:
+      region: eu-central-1
+envs:
+  prod:
+resources:
+  - aws_redshift_cluster_subnet:
+      _module: dwh
+      cluster_subnet_name: redshift_cluster_main_subnet
+  - aws_redshift_cluster:
+      _module: dwh
+      resource_name: redshift_cluster_main
+      cluster_identifier: redshift-cluster-main
+      number_of_nodes: 4
+      skip_final_snapshot: false
+      cluster_subnet_group_name: redshift_cluster_main_subnet

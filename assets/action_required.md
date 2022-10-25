@@ -34,8 +34,22 @@ Below you can find generated list of steps you need to take to fully make use of
     {%- endfor -%}
     {% else -%}
     {{ ' ' }}- no variables to check
-    {% endif -%}
+    {%- endif -%}
     {% endfor %}
+{%- set resources_with_iam_required = intersection(_resources_with_iam_required, resource_types) -%}
+{%- if resources_with_iam_required %}
+* **Resources IAM** - resources that require IAM configuration were included in the provided config. You may have skipped some necessary parameters. Please double-check generated infrastructure, especially for resources:
+{%- for resource in resources_with_iam_required %}
+    * {{ resource }}
+{% endfor -%}
+{% endif %}
+{%- set resources_with_network_required = intersection(_resources_with_network_required, resource_types) -%}
+{%- if resources_with_network_required -%}
+* **Resources networking** - resources that require network configuration were included in the provided config. You may have skipped some necessary parameters. Please double-check generated infrastructure, especially for resources:
+{%- for resource in resources_with_network_required %}
+    * {{ resource }}
+{%- endfor -%}
+{% endif %}
 * **Initialize the environments** - before running `terraform plan/apply`, for each environment execute `terraform init` to fetch all the necessary TF files
 
 Happy further development!

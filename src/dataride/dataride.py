@@ -125,4 +125,5 @@ def create(config_path: str, destination: str, fmt: bool = True, verbose: bool =
         log_if_verbose("Formatting Terraform code", verbose)
         format_terraform_code(destination)
 
+    config_main["resource_types"] = set([next(iter(resource)) for resource in config_main["resources"]])
     prepare_action_required(config_main, jinja_environment, destination)

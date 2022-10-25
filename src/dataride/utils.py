@@ -3,7 +3,7 @@ import yaml
 import logging
 import subprocess
 from random import randint
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Set
 
 from jinja2 import Environment as JinjaEnvironment
 
@@ -46,8 +46,15 @@ def prepare_jinja_environment() -> JinjaEnvironment:
         """
         raise Exception(msg)
 
+    def intersection(a: List[str], b: List[str]) -> List[str]:
+        """
+        Returns an intersection of 2 lists
+        """
+        return list(set(a) & set(b))
+
     env = JinjaEnvironment()
     env.globals["raise_error"] = raise_helper
+    env.globals["intersection"] = intersection
     return env
 
 
@@ -174,12 +181,14 @@ def fill_template_values(template: str, values_dict: Dict) -> str:
             template = template.replace(f"<{param}>", f"{str(value).lower()}")
         elif type(value) == str:
             template = template.replace(f"<{param}>", f'"{str(value)}"')
+        elif type(value) == int or type(value) == float:
+            template = template.replace(f"<{param}>", f"{str(value)}")
         elif type(value) == dict and value["is_variable"]:
             template = template.replace(f"<{param}>", f"var.{str(value['name'])}")
         elif value is None:
             pass  # do nothing, but don't raise error
         else:
-            raise ValueError("Wrong resource parameter value type")
+            raise ValueError(f"Wrong resource parameter value type for {param}")
 
     return template
 
