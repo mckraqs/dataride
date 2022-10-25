@@ -55,6 +55,7 @@ def prepare_jinja_environment() -> JinjaEnvironment:
     env = JinjaEnvironment()
     env.globals["raise_error"] = raise_helper
     env.globals["intersection"] = intersection
+    env.filters["any"] = any
     return env
 
 
@@ -176,19 +177,35 @@ def fill_template_values(template: str, values_dict: Dict) -> str:
     :param values_dict: dictionary containing values to fill within a template
     :return: template with filled values. It shouldn't contain any angle bracket whatsoever after this step
     """
+
+    def map_single_value(val, par):
+        """
+        Supplementary internal function to easily map passed value to specific type of value digestible for Terraform
+        :param val: value to map
+        :param par: parameter name to eventually raise error if value type is unknown
+        """
+        if type(val) == bool or param == "type":
+            return f"{str(val).lower()}"
+        elif type(val) == str:
+            if val.startswith("_"):
+                return f"{str(val)[1:]}"
+            else:
+                return f'"{str(val)}"'
+        elif type(val) == int or type(val) == float:
+            return f"{str(val)}"
+        elif type(val) == dict and val["is_variable"]:
+            return f"var.{str(val['name'])}"
+        else:
+            raise ValueError(f"Wrong resource parameter value type for {par}")
+
     for param, value in values_dict.items():
-        if type(value) == bool or param == "type":
-            template = template.replace(f"<{param}>", f"{str(value).lower()}")
-        elif type(value) == str:
-            template = template.replace(f"<{param}>", f'"{str(value)}"')
-        elif type(value) == int or type(value) == float:
-            template = template.replace(f"<{param}>", f"{str(value)}")
-        elif type(value) == dict and value["is_variable"]:
-            template = template.replace(f"<{param}>", f"var.{str(value['name'])}")
+        if type(value) == list:
+            values_list_joined = ", ".join([map_single_value(elem, param) for elem in value])
+            template = template.replace(f"<{param}>", f"[{values_list_joined}]")
         elif value is None:
             pass  # do nothing, but don't raise error
         else:
-            raise ValueError(f"Wrong resource parameter value type for {param}")
+            template = template.replace(f"<{param}>", map_single_value(value, param))
 
     return template
 

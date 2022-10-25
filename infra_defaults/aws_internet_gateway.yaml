@@ -1,0 +1,6 @@
+_jinja: false
+_module: main
+vpc_id:
+  is_variable: true
+  name: vpc_id
+  type: string

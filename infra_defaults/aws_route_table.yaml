@@ -1,0 +1,8 @@
+_jinja: true
+_module: main
+vpc_id:
+  is_variable: true
+  name: vpc_id
+  type: string
+gateway_id: ""
+nat_gateway_id: ""

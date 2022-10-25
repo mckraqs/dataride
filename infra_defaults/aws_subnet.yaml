@@ -1,0 +1,15 @@
+_jinja: false
+_module: main
+vpc_id:
+  is_variable: true
+  name: vpc_id
+  type: string
+availability_zone:
+  is_variable: true
+  name: availability_zone
+  type: string
+subnet_cidr_block:
+  is_variable: true
+  name: subnet_cidr_block
+  type: string
+map_public_ip_on_launch: true
