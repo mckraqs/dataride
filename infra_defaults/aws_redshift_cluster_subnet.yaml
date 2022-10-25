@@ -1,0 +1,7 @@
+_jinja: false
+_module: main
+cluster_subnet_name: redshift_cluster_subnet
+subnet_ids:
+  name: subnet_ids
+  is_variable: true
+  type: list(string)

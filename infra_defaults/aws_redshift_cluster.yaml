@@ -1,0 +1,32 @@
+_jinja: false
+_module: main
+cluster_identifier: redshift_cluster
+iam_roles:
+  name: redshift_iam_roles
+  is_variable: true
+  type: list(string)
+default_iam_role_arn:
+  name: redshift_default_iam_role_arn
+  is_variable: true
+  type: string
+node_type: dc2.large
+number_of_nodes: 2
+port: 5439
+skip_final_snapshot: true
+master_username:
+  name: redshift_master_username
+  is_variable: true
+  type: string
+master_password:
+  name: redshift_master_password
+  is_variable: true
+  type: string
+database_name: dev
+cluster_subnet_group_name:
+  name: redshift_cluster_subnet_group_name
+  is_variable: true
+  type: string
+vpc_security_group_ids:
+  name: vpc_security_group_ids
+  is_variable: true
+  type: string
