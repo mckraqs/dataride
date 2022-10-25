@@ -1,8 +1,8 @@
 _jinja: false
 _module: main
-subnet_vpc_id:
+vpc_id:
   is_variable: true
-  name: subnet_vpc_id
+  name: vpc_id
   type: string
 availability_zone:
   is_variable: true

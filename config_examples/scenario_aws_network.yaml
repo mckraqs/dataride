@@ -1,0 +1,65 @@
+# Sample AWS network setup
+#
+# Creates a structure that consists of:
+# - AWS VPC
+#    - CIDR block: 10.192.0.0/16
+# - AWS subnets (2 public, 2 private, all within above CIDR block)
+# - AWS Internet Gateway
+# - AWS NAT Gateways (1 for each private subnet)
+# - 3 AWS Route Tables (1 public and 2 private)
+# - AWS Security Group with rules:
+#   - egress self-referencing rule for TCP protocol
+#   - ingress rull for HTTPS protocol
+
+providers:
+  - aws:
+      region: eu-central-1
+envs:
+  prod:
+resources:
+  - aws_vpc:
+      _module: network
+      resource_name: main_vpc
+      vpc_cidr: "10.192.0.0/16"
+
+  # AWS Subnets (2 public, 2 private)
+  - aws_subnet:
+      _module: network
+      resource_name: public_subnet_1
+      vpc_id: aws_vpc.main_vpc.id
+      availability_zone: eu-central-1a
+      subnet_cidr_block:
+        is_variable: true
+        name: public_subnet_1_cidr
+        type: string
+      map_public_ip_on_launch: true
+  - aws_subnet:
+      _module: network
+      resource_name: public_subnet_2
+      vpc_id: aws_vpc.main_vpc.id
+      availability_zone: eu-central-1b
+      subnet_cidr_block:
+        is_variable: true
+        name: public_subnet_2_cidr
+        type: string
+      map_public_ip_on_launch: true
+  - aws_subnet:
+      _module: network
+      resource_name: private_subnet_1
+      vpc_id: aws_vpc.main_vpc.id
+      availability_zone: eu-central-1a
+      subnet_cidr_block:
+        is_variable: true
+        name: private_subnet_1_cidr
+        type: string
+      map_public_ip_on_launch: false
+  - aws_subnet:
+      _module: network
+      resource_name: private_subnet_2
+      vpc_id: aws_vpc.main_vpc.id
+      availability_zone: eu-central-1b
+      subnet_cidr_block:
+        is_variable: true
+        name: private_subnet_2_cidr
+        type: string
+      map_public_ip_on_launch: false
