@@ -1,0 +1,81 @@
+# Sample Apache Airflow local environment setup
+# with AWS S3 buckets for data and Airflow setup storage
+#
+# Creates a structure that consists of:
+# - Local Airflow directories: dags/, logs/, plugins/
+# - Airflow Docker Compose file to download all necessary images and start the services,
+#     more on running Airflow in Docker:
+#     https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html
+# - AWS S3 structure, buckets and directories (1 version for each environment)
+#   - company-xyz-airflow-<env>
+#     - dags/
+#     - logs/
+#     - plugins/
+#   - company-xyz-data-<env>
+#     - bronze/
+#     - silver/
+#     - gold/
+
+providers:
+  - aws:
+      region: eu-central-1
+envs:
+  prod:
+    env:
+      is_variable: true
+      name: env
+      type: string
+      default_value: prod
+  test:
+    env:
+      is_variable: true
+      name: env
+      type: string
+      default_value: test
+
+resources:
+
+  # AWS S3 Airflow directories copy storage
+  - aws_s3:
+      _module: storage
+      resource_name: bucket_airflow
+      bucket_name: _format("company-xyz-airflow-%s", var.env)
+      versioning: true
+      env:
+        is_variable: true
+        name: env
+        type: string
+  - aws_s3_directory:
+      _module: storage
+      bucket: _aws_s3_bucket.bucket_dataride.name
+      key: dags
+  - aws_s3_directory:
+      _module: storage
+      bucket: _aws_s3_bucket.bucket_dataride.name
+      key: logs
+  - aws_s3_directory:
+      _module: storage
+      bucket: _aws_s3_bucket.bucket_dataride.name
+      key: plugins
+
+  # AWS S3 data (bronze, silver, gold) storage
+  - aws_s3:
+      _module: storage
+      resource_name: bucket_data
+      bucket_name: _format("company-xyz-data-%s", var.env)
+      versioning: true
+  - aws_s3_directory:
+      _module: storage
+      bucket: _aws_s3_bucket.bucket_dataride.name
+      key: dags
+  - aws_s3_directory:
+      _module: storage
+      bucket: _aws_s3_bucket.bucket_dataride.name
+      key: logs
+  - aws_s3_directory:
+      _module: storage
+      bucket: _aws_s3_bucket.bucket_dataride.name
+      key: plugins
+
+extra_assets:
+  airflow_local:
