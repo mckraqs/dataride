@@ -50,6 +50,17 @@ Below you can find generated list of steps you need to take to fully make use of
     * {{ resource }}
 {%- endfor -%}
 {% endif %}
+{%- if extra_asset_names %}
+* **Additional assets**
+{%- for extra_asset in extra_asset_names %}
+{%- if extra_asset == "airflow_local" %}
+    * Local Airflow environment 
+        * created environment infrastructure follows tutorial that you can find on the [official Airflow docs website](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html) - it's highly recommended to check it out before starting creating DAGs
+        * double-check Docker Compose configuration file so running services suit your needs (e.g. additional pip requirements, or Apache Airflow version)
+        * After local development you can consider setting up services like AWS MWAA, EC2 instance, or GCP GKE to move your pipelines to the cloud
+{% endif %}
+{%- endfor -%}
+{% endif -%}
 * **Initialize the environments** - before running `terraform plan/apply`, for each environment execute `terraform init` to fetch all the necessary TF files
 
 Happy further development!
