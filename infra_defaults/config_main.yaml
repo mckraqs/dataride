@@ -1,3 +1,6 @@
+providers:
+  - aws:
+      region: eu-central-1
 envs:
   prod:
     backend:
@@ -16,6 +19,7 @@ default_backend: # Extra backend default definition in case backend-less environ
     region: "<ENTER YOUR VARIABLE VALUE HERE>"
     dynamodb_table: "<ENTER YOUR VARIABLE VALUE HERE>" # LockID as String for partition key
     encrypt: true
+extra_assets:
 _resources_with_network_required:
   - aws_redshift_cluster
   - aws_redshift_cluster_subnet

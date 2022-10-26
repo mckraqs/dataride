@@ -3,7 +3,8 @@ import yaml
 import logging
 import subprocess
 from random import randint
-from typing import Dict, Tuple, List, Set
+from typing import Dict, Tuple, List
+from distutils.dir_util import copy_tree
 
 from jinja2 import Environment as JinjaEnvironment
 
@@ -316,6 +317,7 @@ def prepare_action_required(
     config_main: Dict,
     jinja_environment: JinjaEnvironment,
     destination: str,
+    verbose: bool,
     action_required_path: str = "assets/action_required.md",
 ) -> None:
     """
@@ -324,10 +326,28 @@ def prepare_action_required(
     :param jinja_environment: Jinja Python framework environment to process template
     :param destination: directory location for infrastructure setup generation
     :param action_required_path: location where action required template document is stored
-    :return:
+    :param verbose: whether to print more outputs
     """
+    log_if_verbose("Preparing action_required.md file", verbose)
+
     with open(action_required_path) as f:
         action_required_rendered = render_jinja(f.read(), config_main, jinja_environment)
 
     with open(f"{destination}/action_required.md", "w") as f:
         f.write(action_required_rendered)
+
+
+def prepare_extra_assets(config_main: Dict, destination: str, verbose: bool) -> None:
+    """
+    For each object passed in `extra_assets` dictionary, tries to process information
+        and prepare additional part of the data platform that is not a Terraform code.
+    :param config_main: main dataride configuration dictionary
+    :param destination: where infrastructure (incl. extra assets) should be saved
+    :param verbose: whether to print more outputs
+    """
+    log_if_verbose(f"Extra assets found: {len(config_main['extra_assets'])}", verbose)
+
+    # TODO: For each extra asset prepare separate class for processing
+    for asset_name, asset_config in config_main["extra_assets"].items():
+        if asset_name == "airflow_local":
+            copy_tree("assets/airflow_local", f"{destination}/airflow_local")

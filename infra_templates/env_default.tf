@@ -18,7 +18,7 @@ module "{{ module_name }}" {
   {{ var }} = "<ENTER YOUR VARIABLE VALUE HERE>"
   {% else %}
   {{ var }} = var.{{ var }}
-  {%- endif %}
+  {% endif %}
   {%- endfor %}
   {%- endif %}}
 {% endfor %}

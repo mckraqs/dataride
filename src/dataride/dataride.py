@@ -17,6 +17,7 @@ from .utils import (
     save_module_setup,
     save_env_setup,
     fetch_resource_variables,
+    prepare_extra_assets,
     prepare_action_required,
 )
 
@@ -56,74 +57,86 @@ def create(config_path: str, destination: str, fmt: bool = True, verbose: bool =
 
     run_config_check(config_main, verbose)
 
-    for resource in config_main["resources"]:
-
-        resource_type = next(iter(resource))
-
-        log_if_verbose(f"Processing resource: {resource_type}", verbose)
-        run_resource_check(resource, resource_type, verbose)
-
-        resource_updated = update_resource_dict_with_defaults(resource[resource_type], resource_type)
-        resource_module = resource_updated["_module"]
-
-        # Rendering template if applicable
-        resource_template = load_template(resource_type)
-        if resource[resource_type]["_jinja"]:
-            resource_template = render_jinja(resource_template, resource_updated, jinja_environment)
-
-        # Filling template with resource values for main.tf
-        resource_template_filled = fill_template_values(resource_template, resource_updated)
-        output_dict[resource_module]["main.tf"] += resource_template_filled + "\n" * 2
-
-        # Filling template with resource values for var.tf
-        resource_variables = fetch_resource_variables(resource_updated, jinja_environment)
-        output_dict[resource_module]["var.tf"] += resource_variables[0]
-
-        # Adding module information to the config dictionary for modules instantiating generation
-        if resource_module not in config_main["modules"].keys():
-            config_main["modules"][resource_module] = {
-                "vars_with_def": [],
-                "vars_no_def": [],
-            }
-
-        config_main["modules"][resource_module]["vars_with_def"] += resource_variables[1]
-        config_main["modules"][resource_module]["vars_no_def"] += resource_variables[2]
-
-        log_if_verbose(
-            f"\tResource variables: with default values - {len(resource_variables[1])},"
-            f" no default values - {len(resource_variables[2])}",
-            verbose,
-        )
-
-    log_if_verbose("Saving infrastructure to passed location", verbose)
     create_result_dir_structure(destination)
 
-    log_if_verbose("Saving modules", verbose)
-    for module in output_dict.keys():
-        save_module_setup(destination, module, output_dict[module], verbose)
+    if config_main.get("resources", False):
+        for resource in config_main["resources"]:
+
+            resource_type = next(iter(resource))
+
+            log_if_verbose(f"Processing resource: {resource_type}", verbose)
+            run_resource_check(resource, resource_type, verbose)
+
+            resource_updated = update_resource_dict_with_defaults(resource[resource_type], resource_type)
+            resource_module = resource_updated["_module"]
+
+            # Rendering template if applicable
+            resource_template = load_template(resource_type)
+            if resource[resource_type]["_jinja"]:
+                resource_template = render_jinja(resource_template, resource_updated, jinja_environment)
+
+            # Filling template with resource values for main.tf
+            resource_template_filled = fill_template_values(resource_template, resource_updated)
+            output_dict[resource_module]["main.tf"] += resource_template_filled + "\n" * 2
+
+            # Filling template with resource values for var.tf
+            resource_variables = fetch_resource_variables(resource_updated, jinja_environment)
+            output_dict[resource_module]["var.tf"] += resource_variables[0]
+
+            # Adding module information to the config dictionary for modules instantiating generation
+            if resource_module not in config_main["modules"].keys():
+                config_main["modules"][resource_module] = {
+                    "vars_with_def": [],
+                    "vars_no_def": [],
+                }
+
+            config_main["modules"][resource_module]["vars_with_def"] += resource_variables[1]
+            config_main["modules"][resource_module]["vars_no_def"] += resource_variables[2]
+
+            log_if_verbose(
+                f"\tResource variables: with default values - {len(resource_variables[1])},"
+                f" no default values - {len(resource_variables[2])}",
+                verbose,
+            )
+
+        log_if_verbose("Saving modules", verbose)
+        for module in output_dict.keys():
+            save_module_setup(destination, module, output_dict[module], verbose)
+
+        config_main["resource_types"] = list(set([next(iter(resource)) for resource in config_main["resources"]]))
 
     log_if_verbose("Saving environments", verbose)
-    for env_name, env_config in config_main["envs"].items():
-        env_template = load_template("env_default")
-        if env_config is None:
-            env_config = {"_empty": "_empty"}
-        env_config["variables"] = [k for k, v in env_config.items() if type(v) == dict and v.get("is_variable", False)]
+    if config_main.get("envs", False):
+        for env_name, env_config in config_main["envs"].items():
+            env_template = load_template("env_default")
+            if env_config is None:
+                env_config = {"_empty": "_empty"}
+            env_config["variables"] = [
+                k for k, v in env_config.items() if type(v) == dict and v.get("is_variable", False)
+            ]
 
-        env_config["var.tf"] = fetch_resource_variables(env_config, jinja_environment)[0]
-        if env_config.get("backend", False):
-            config_main["backend"] = env_config["backend"]
-        else:
-            config_main["backend"] = config_main["default_backend"]
+            env_config["var.tf"] = fetch_resource_variables(env_config, jinja_environment)[0]
+            if env_config.get("backend", False):
+                config_main["backend"] = env_config["backend"]
+            else:
+                config_main["backend"] = config_main["default_backend"]
 
-        env_config["main.tf"] = render_jinja(
-            env_template, {**config_main, **{"env": {**env_config}}}, jinja_environment
-        )
-        config_main["envs"][env_name] = env_config
-        save_env_setup(destination, env_name, env_config, verbose)
+            env_config["main.tf"] = render_jinja(
+                env_template, {**config_main, **{"env": {**env_config}}}, jinja_environment
+            )
+            config_main["envs"][env_name] = env_config
+            save_env_setup(destination, env_name, env_config, verbose)
 
     if fmt:
         log_if_verbose("Formatting Terraform code", verbose)
         format_terraform_code(destination)
 
-    config_main["resource_types"] = set([next(iter(resource)) for resource in config_main["resources"]])
-    prepare_action_required(config_main, jinja_environment, destination)
+    log_if_verbose("Processing extra assets, if applicable", verbose)
+    if config_main["extra_assets"]:
+        config_main["extra_asset_names"] = sorted(list(set([asset for asset in config_main["extra_assets"].keys()])))
+        prepare_extra_assets(config_main, destination, verbose)
+    else:
+        log_if_verbose("No extra assets found", verbose)
+
+    print(config_main)
+    prepare_action_required(config_main, jinja_environment, destination, verbose)

@@ -1,0 +1,10 @@
+# Sample Apache Airflow local environment setup
+#
+# Creates a structure that consists of:
+# - Airflow directories: dags/, logs/, plugins/
+# - Airflow Docker Compose file to download all necessary images and start the services,
+#     more on running Airflow in Docker:
+#     https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html
+
+extra_assets:
+  airflow_local:
