@@ -24,8 +24,8 @@ module "{{ module_name }}" {
 {% endfor %}
 
 terraform {
-  backend "{{ backend['type'] }}" {
-    {%- for param_name, param_value in backend['options'].items() %}
+  backend "{{ env['backend']['type'] }}" {
+    {%- for param_name, param_value in env['backend']['options'].items() %}
     {{ param_name }} = "{{ param_value }}"
     {%- endfor %}
   }

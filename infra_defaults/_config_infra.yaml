@@ -1,0 +1,11 @@
+providers:
+  - aws:
+      region: eu-central-1
+envs:
+  prod:
+extra_assets:
+_resources_with_network_required:
+  - aws_redshift_cluster
+  - aws_redshift_cluster_subnet
+_resources_with_iam_required:
+  - aws_redshift_cluster
