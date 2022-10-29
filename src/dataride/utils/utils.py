@@ -49,19 +49,15 @@ def prepare_jinja_environment() -> JinjaEnvironment:
     return env
 
 
-def load_config(path: str, is_main: bool = False) -> Dict:
+def load_config(path: str) -> Dict:
     """
     Loads a YAML dataride config file into a Python dictionary
 
     :param path: where config file is stored
-    :param is_main: whether YAML file includes main dataride config or only resource config
     :return: Python dictionary with loaded template resources
     """
     with open(path) as f:
         config = yaml.safe_load(f.read())
-
-    if is_main:
-        config["modules"] = {}
 
     return config
 
@@ -158,7 +154,7 @@ def fill_template_values(template: str, values_dict: Dict) -> str:
         elif value is None:
             pass  # do nothing, but don't raise error
         else:
-            template = template.replace(f"<{param}>", map_single_value(value, param))
+            template = template.replace(f"<{param}>", map_single_value(param, value))
 
     return template
 

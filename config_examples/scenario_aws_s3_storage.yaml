@@ -12,15 +12,13 @@ providers:
       region: eu-central-1
 envs:
   prod:
-    data_bucket_versioning:
+    versioning:
       is_variable: true
-      name: data_bucket_versioning
       type: string
     # Backend definition skipped on purpose, to see default one
   test:
-    data_bucket_versioning:
+    versioning:
       is_variable: true
-      name: data_bucket_versioning
       default_value: false
       type: string
     backend:
@@ -34,7 +32,6 @@ resources:
       bucket_name: dataride-bucket-data
       versioning:
         is_variable: true
-        name: data_bucket_versioning
         type: bool
   - aws_s3:
       _module: storage

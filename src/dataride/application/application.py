@@ -15,7 +15,7 @@ class Application:
         :param fmt: whether to execute `terraform fmt` on a destination directory after infrastructure generation
         :param verbose: whether to print more outputs
         """
-        config_infra = load_config(config_path, is_main=True)
+        config_infra = load_config(config_path)
         infra = Infra(config_infra, destination, self.jinja_environment, verbose)
 
         infra.process_resources()
