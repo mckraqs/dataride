@@ -1,13 +1,15 @@
 import os
 import logging
-from typing import List
+from typing import Dict, List
 from dataclasses import dataclass
 
+from dataride.configs.elements.variable import Variable
 from dataride.utils.utils import log_if_verbose
+from dataride.configs.abstracts import ToDict
 
 
 @dataclass
-class Module:
+class Module(ToDict):
     """
     Class that holds information about a particular Terraform module created
         as a result of infrastructure generation with `dataride` package.
@@ -16,8 +18,8 @@ class Module:
     name: str
     main_tf: str
     var_tf: str
-    vars_with_def: List[str]
-    vars_no_def: List[str]
+    vars_with_def: List[Variable]
+    vars_no_def: List[Variable]
     verbose: bool
 
     def __init__(self, name, verbose):
@@ -27,6 +29,15 @@ class Module:
         self.vars_with_def = []
         self.vars_no_def = []
         self.verbose = verbose
+
+    def to_dict(self) -> Dict:
+        return {
+            "name": self.name,
+            "main_tf": self.main_tf,
+            "var_tf": self.var_tf,
+            "vars_with_def": [var.name for var in self.vars_with_def],
+            "vars_no_def": [var.name for var in self.vars_no_def],
+        }
 
     def save(self, destination: str) -> None:
         """

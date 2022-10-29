@@ -7,14 +7,13 @@ from dataclasses import dataclass
 from jinja2 import Environment as JinjaEnvironment
 
 from dataride.utils.utils import update_resource_dict_with_defaults, log_if_verbose
-from dataride.configs.module import Module
-from dataride.configs.resource import Resource
-from dataride.configs.environment import Environment
+from dataride.configs.elements import Module, Resource, Environment
 from dataride.assets import Asset, ASSETS_DICT
+from dataride.configs.abstracts import ToDict
 
 
 @dataclass
-class Infra:
+class Infra(ToDict):
     """
     Class that holds overall infrastructure information of the whole data platform that is about to be generated
     """
@@ -81,11 +80,16 @@ class Infra:
             self.config["extra_assets"] = {}
         self.config["extra_assets"]["action_required"] = {}
 
+        self.config["modules"] = {}
+
     def process_resources(self):
         for config_resource in self.config["resources"]:
-            resource = Resource(next(iter(config_resource)), config_resource, self.jinja_environment, self.verbose)
+            resource_name = next(iter(config_resource))
+            resource = Resource(resource_name, config_resource[resource_name], self.jinja_environment, self.verbose)
             self.add_module_data(resource)
             self.resources.append(resource)
+
+        self.update_config()
 
     def process_environments(self):
         for name_env, config_env in self.config["envs"].items():
@@ -93,10 +97,16 @@ class Infra:
             environment.extend_environment_data(self.config["providers"], self.modules)
             self.environments.append(environment)
 
+        for env in self.environments:
+            print(env.to_dict())
+        self.update_config()
+
     def process_extra_assets(self):
         for asset_name, asset_config in self.config["extra_assets"].items():
             asset = ASSETS_DICT[asset_name]({**asset_config, **self.config}, self.jinja_environment, self.verbose)
             self.extra_assets.append(asset)
+
+        self.update_config()
 
     def add_module_data(self, resource: Resource):
         """
@@ -107,9 +117,20 @@ class Infra:
             self.modules[resource.module] = Module(resource.module, self.verbose)
 
         self.modules[resource.module].main_tf += resource.template_filled + "\n" * 2
-        self.modules[resource.module].var_tf += resource.variables["result_str"]
-        self.modules[resource.module].vars_with_def += resource.variables["vars_with_def"]
-        self.modules[resource.module].vars_no_def += resource.variables["vars_no_def"]
+        self.modules[resource.module].var_tf += "\n".join([str(var) for var in resource.variables])
+        self.modules[resource.module].vars_with_def += [
+            var for var in resource.variables if var.default_value is not None
+        ]
+        self.modules[resource.module].vars_no_def += [var for var in resource.variables if var.default_value is None]
+
+    def update_config(self):
+        self.config["resources"] = [{resource.name: resource.to_dict()} for resource in self.resources]
+
+        for module_name, module in self.modules.items():
+            self.config["modules"][module_name] = module.to_dict()
+
+        for environment in self.environments:
+            self.config["envs"][environment.name] = environment.to_dict()
 
     def save(self):
         self.__save_structure()
@@ -153,3 +174,6 @@ class Infra:
         if fmt:
             log_if_verbose("Formatting Terraform code", self.verbose)
             subprocess.run(["terraform", "fmt", "-recursive", "-list=false", self.destination])
+
+    def to_dict(self) -> Dict:
+        return self.config

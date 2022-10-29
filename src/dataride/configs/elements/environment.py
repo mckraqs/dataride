@@ -1,32 +1,35 @@
 import os
 import logging
-from typing import Dict, List, Union
-from dataclasses import dataclass, asdict
+from typing import Dict, List
+from dataclasses import dataclass
 
 from jinja2 import Environment as JinjaEnvironment
 
-from dataride.utils.utils import (
+from dataride.utils import (
     load_template,
     update_resource_dict_with_defaults,
-    fetch_resource_variables,
     render_jinja,
     log_if_verbose,
 )
+from dataride.configs.utils import fetch_resource_variables
+from dataride.configs.elements.variable import Variable
+from dataride.configs.abstracts import ToDict
 
 
 @dataclass
-class Environment:
+class Environment(ToDict):
     """
     Class that holds information about a particular Terraform environment created
         as a result of infrastructure generation with `dataride` package.
     """
 
     name: str
-    config: Dict[str, str]
+    config: Dict
     main_tf: str
     var_tf: str
     template: str
-    variables: Dict[str, Union[str, List[str]]]
+    variables: List[Variable]
+    variables_names: List[str]
     jinja_environment: JinjaEnvironment
     verbose: bool
 
@@ -43,15 +46,17 @@ class Environment:
 
         self.__check()
         self.__update_with_defaults()
-
-        self.variables = self.__get_variables()
+        self.__get_variables()
         self.template = load_template("env_default")
+
+        self.__update_config()
 
     def __check(self):
         pass
 
     def __get_variables(self):
-        return fetch_resource_variables(self.config, self.jinja_environment)
+        self.variables = fetch_resource_variables(self.config, self.jinja_environment, self.verbose)
+        self.variables_names = [var.name for var in self.variables]
 
     def __update_with_defaults(self):
         if self.config is None:
@@ -65,15 +70,20 @@ class Environment:
         :param infra_providers: list of infrastructure's providers, passed from the main Infra objects
         :param infra_modules: dictionary of infrastructure's modules, passed from the main Infra objects
         """
-        self.var_tf = self.variables["result_str"]
+        self.var_tf = "\n".join([str(var) for var in self.variables])
 
-        infra_modules_transformed = {name: asdict(config) for name, config in infra_modules.items()}
+        infra_modules_transformed = {module_name: module.to_dict() for module_name, module in infra_modules.items()}
         full_template_config = {
             "modules": infra_modules_transformed,
             "providers": infra_providers,
             **{"env": {**self.config}},
         }
         self.main_tf = render_jinja(self.template, full_template_config, self.jinja_environment)
+
+        self.__update_config()
+
+    def to_dict(self) -> Dict:
+        return self.config
 
     def save(self, destination: str) -> None:
         """
@@ -100,8 +110,18 @@ class Environment:
         log_if_verbose(f"\tEnvironment saved!", self.verbose)
 
     def log_stats(self):
+        vars_with_def = [var for var in self.variables if var.default_value is not None]
+        vars_no_def = [var for var in self.variables if var.default_value is None]
         log_if_verbose(
-            f"\tEnvironment ({self.name}) variables: with default values - {len(self.variables['vars_with_def'])},"
-            f" no default values - {len(self.variables['vars_no_def'])}",
+            f"\tEnvironment ({self.name}) variables: with default values - {len(vars_with_def)},"
+            f" no default values - {len(vars_no_def)}",
             self.verbose,
         )
+
+    def __update_config(self) -> None:
+        self.config["name"] = self.name
+        self.config["main.tf"] = self.main_tf
+        self.config["var.tf"] = self.var_tf
+        self.config["variables_names"] = self.variables_names
+        for var in self.variables:
+            self.config.update({var.name: var.to_dict()})
