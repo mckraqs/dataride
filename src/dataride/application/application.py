@@ -8,7 +8,7 @@ class Application:
 
     def create_infra_setup(self, config_path: str, destination: str, fmt: bool = True, verbose: bool = False) -> None:
         """
-        Creates the infrastructure setup based on a provided config file
+        Creates the infrastructure setup based on the provided config file
 
         :param config_path: where YAML data platform config setup file is stored
         :param destination: where infrastructure code should be saved
@@ -19,6 +19,7 @@ class Application:
         infra = Infra(config_infra, destination, self.jinja_environment, verbose)
 
         infra.process_resources()
+        infra.process_modules()
         infra.process_environments()
         infra.process_extra_assets()
 

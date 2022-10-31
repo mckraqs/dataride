@@ -24,7 +24,7 @@ def main():
 @click.option("--verbose", "-v", is_flag=True, type=bool, default=False, help="Whether to print more outputs")
 def create(config_path: str, destination: str, fmt: bool = True, verbose: bool = False) -> None:
     """
-    CLI command to generate data platform infrastructure code out of provided template
+    CLI command to generate data platform infrastructure code out of the provided template
 
     :param config_path: where YAML data platform config setup file is stored
     :param destination: where infrastructure code should be saved

@@ -6,7 +6,6 @@ from .utils import (
     update_resource_dict_with_defaults,
     render_jinja,
     fill_template_values,
-    fetch_resource_variables,
 )
 
 __all__ = [
@@ -17,5 +16,4 @@ __all__ = [
     "update_resource_dict_with_defaults",
     "render_jinja",
     "fill_template_values",
-    "fetch_resource_variables",
 ]

@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List
 from dataclasses import dataclass
 
 from jinja2 import Environment as JinjaEnvironment
@@ -10,7 +10,6 @@ from dataride.utils import (
     render_jinja,
     fill_template_values,
 )
-from dataride.configs.utils import fetch_resource_variables
 from dataride.configs.elements.variable import Variable
 from dataride.configs.abstracts import ToDict
 
@@ -35,6 +34,7 @@ class Resource(ToDict):
 
         self.name = name
         self.config = config_dict
+        self.variables = []
         self.verbose = verbose
         self.jinja_environment = jinja_environment
 
@@ -42,7 +42,7 @@ class Resource(ToDict):
         self.__update_with_defaults()
 
         self.module = self.config["_module"]
-        self.variables = self.__get_variables()
+        self.__get_variables()
         self.template = load_template(self.name)
         self.__render_template()
         self.template_filled = fill_template_values(self.template, self.config)
@@ -64,21 +64,24 @@ class Resource(ToDict):
 
         log_if_verbose("\tResource config check passed!", self.verbose)
 
-    def __update_with_defaults(self):
+    def __update_with_defaults(self) -> None:
         self.config = update_resource_dict_with_defaults(self.config, self.name)
 
-    def __render_template(self):
+    def __render_template(self) -> None:
         if self.config["_jinja"]:
             self.template = render_jinja(self.template, self.config, self.jinja_environment)
 
-    def __get_variables(self):
-        return fetch_resource_variables(self.config, self.jinja_environment, self.verbose)
+    def __get_variables(self) -> None:
+        for field_name, field_value in self.config.items():
+            if type(field_value) == dict and field_value.get("is_variable", False):
+                var = Variable(field_name, field_value, self.jinja_environment, self.verbose)
+                self.variables.append(var)
 
     def __update_config(self) -> None:
         for var in self.variables:
             self.config.update({var.name: var.to_dict()})
 
-    def log_stats(self):
+    def log_stats(self) -> None:
         vars_with_def = [var for var in self.variables if var.default_value is not None]
         vars_no_def = [var for var in self.variables if var.default_value is None]
         log_if_verbose(

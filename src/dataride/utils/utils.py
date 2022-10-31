@@ -1,11 +1,9 @@
 import yaml
 import logging
 from random import randint
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from jinja2 import Environment as JinjaEnvironment
-
-VARIABLES_DEFAULT_DICT = {"default_value": None, "description": ""}
 
 
 def log_if_verbose(message: str, verbose: bool) -> None:
@@ -73,7 +71,7 @@ def load_template(template_name: str) -> str:
 
 
 def update_resource_dict_with_defaults(
-    resource_dict: Dict[str, str], resource_type: str, create_resource_name: bool = True
+    resource_dict: Dict, resource_type: str, create_resource_name: bool = True
 ) -> Dict:
     """
     Extra process of updating resource dictionary with default values if possible (in case some of them were skipped),
@@ -99,7 +97,7 @@ def update_resource_dict_with_defaults(
 
 def render_jinja(
     template: str,
-    values_dict: Dict[str, str],
+    values_dict: Dict,
     jinja_environment: JinjaEnvironment,
 ) -> str:
     """
@@ -157,36 +155,3 @@ def fill_template_values(template: str, values_dict: Dict) -> str:
             template = template.replace(f"<{param}>", map_single_value(param, value))
 
     return template
-
-
-def fetch_resource_variables(
-    resource_dict: Dict, jinja_environment: JinjaEnvironment
-) -> Dict[str, Union[str, List[str]]]:
-    """
-    Fetching information about all Terraform resource variables that were provided inside main config file
-
-    :param resource_dict: current resource that is being prepared (dictionary loaded from yaml template file)
-    :param jinja_environment: Jinja Python framework environment to process template
-    :return: a tuple of: rendered template, list of variable names with default values,
-        and list of variable names without default values
-    """
-    result_variables = {"result_str": "", "vars_with_def": [], "vars_no_def": []}
-
-    # Only iterating over parameters which were specified as variables in the main config file
-    for param, value in resource_dict.items():
-        if type(value) == dict and value.get("is_variable", False):
-            missing_defaults = {k: v for k, v in VARIABLES_DEFAULT_DICT.items() if k not in value.keys()}
-            value.update(missing_defaults)
-
-            # Render variable template for var.tf for each module
-            var_template = load_template("var")
-            rendered = render_jinja(var_template, value, jinja_environment)
-            result_variables["result_str"] += fill_template_values(rendered, value) + "\n" * 2
-
-            # Append variable name to proper list (for module instantiating inside TF environment)
-            if value["default_value"] is None:
-                result_variables["vars_no_def"].append(value["name"])
-            else:
-                result_variables["vars_with_def"].append(value["name"])
-
-    return result_variables

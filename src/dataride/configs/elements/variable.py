@@ -1,4 +1,4 @@
-from typing import List, Union, Dict
+from typing import Union, Dict
 from dataclasses import dataclass
 
 from jinja2 import Environment as JinjaEnvironment
@@ -13,6 +13,7 @@ class Variable(ToDict):
     Class that holds information about one specific Terraform variable
     """
 
+    target: str
     name: str
     type: str
     default_value: Union[str, bool, int, float]
@@ -23,10 +24,10 @@ class Variable(ToDict):
     jinja_environment: JinjaEnvironment
     verbose: bool
 
-    def __init__(self, name: str, config_dict: Dict, jinja_environment: JinjaEnvironment, verbose: bool):
+    def __init__(self, target: str, config_dict: Dict, jinja_environment: JinjaEnvironment, verbose: bool):
         self.__default_name = "_config_variable"
 
-        self.name = name
+        self.target = target
         self.config = config_dict
         self.jinja_environment = jinja_environment
         self.verbose = verbose
@@ -41,14 +42,19 @@ class Variable(ToDict):
     def __str__(self):
         return self.template_filled
 
-    def __check(self):
+    def __check(self) -> None:
         assert self.config.get("type", False)
 
-    def __update_with_defaults(self):
+    def __update_with_defaults(self) -> None:
         self.config = update_resource_dict_with_defaults(self.config, self.__default_name, create_resource_name=False)
-        self.config["name"] = self.name
+        self.config["target"] = self.target
+        if self.config.get("name", False):
+            self.name = self.config["name"]
+        else:
+            self.name = self.target
+            self.config["name"] = self.name
 
-    def __fetch_params_values(self):
+    def __fetch_params_values(self) -> None:
         self.type = self.config["type"]
         self.default_value = self.config["default_value"]
         self.description = self.config["description"]

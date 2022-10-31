@@ -11,8 +11,8 @@ from dataride.utils import (
     render_jinja,
     log_if_verbose,
 )
-from dataride.configs.utils import fetch_resource_variables
 from dataride.configs.elements.variable import Variable
+from dataride.configs.elements.module import Module
 from dataride.configs.abstracts import ToDict
 
 
@@ -41,32 +41,38 @@ class Environment(ToDict):
         self.config = config_dict
         self.main_tf = ""
         self.var_tf = ""
+        self.variables = []
         self.jinja_environment = jinja_environment
         self.verbose = verbose
 
         self.__check()
         self.__update_with_defaults()
         self.__get_variables()
-        self.template = load_template("env_default")
+        self.template = load_template(self.__default_name)
 
         self.__update_config()
 
-    def __check(self):
+    def __check(self) -> None:
         pass
 
-    def __get_variables(self):
-        self.variables = fetch_resource_variables(self.config, self.jinja_environment, self.verbose)
+    def __get_variables(self) -> None:
+        if self.config.get("variables", False):
+            for var_name, var_config in self.config["variables"].items():
+                var = Variable(var_name, var_config, self.jinja_environment, self.verbose)
+                self.variables.append(var)
+
         self.variables_names = [var.name for var in self.variables]
 
-    def __update_with_defaults(self):
+    def __update_with_defaults(self) -> None:
         if self.config is None:
             self.config = {}
 
         self.config = update_resource_dict_with_defaults(self.config, self.__default_name, create_resource_name=False)
 
-    def extend_environment_data(self, infra_providers, infra_modules):
+    def extend_environment_data(self, infra_providers: Dict, infra_modules: Dict[str, Module]) -> None:
         """
         Extends environment's information with proper `main_tf` and `var_tf` values
+
         :param infra_providers: list of infrastructure's providers, passed from the main Infra objects
         :param infra_modules: dictionary of infrastructure's modules, passed from the main Infra objects
         """
@@ -76,7 +82,7 @@ class Environment(ToDict):
         full_template_config = {
             "modules": infra_modules_transformed,
             "providers": infra_providers,
-            **{"env": {**self.config}},
+            "env": {**self.config},
         }
         self.main_tf = render_jinja(self.template, full_template_config, self.jinja_environment)
 
@@ -89,6 +95,7 @@ class Environment(ToDict):
         """
         Saves infrastructure environment setup code into the specified location
         If an environment directory exists, function breaks
+
         :param destination: directory location for infrastructure setup generation
         """
         log_if_verbose(f"\tSaving environment: {self.name}...", self.verbose)
@@ -109,7 +116,7 @@ class Environment(ToDict):
 
         log_if_verbose(f"\tEnvironment saved!", self.verbose)
 
-    def log_stats(self):
+    def log_stats(self) -> None:
         vars_with_def = [var for var in self.variables if var.default_value is not None]
         vars_no_def = [var for var in self.variables if var.default_value is None]
         log_if_verbose(
@@ -124,4 +131,4 @@ class Environment(ToDict):
         self.config["var.tf"] = self.var_tf
         self.config["variables_names"] = self.variables_names
         for var in self.variables:
-            self.config.update({var.name: var.to_dict()})
+            self.config["variables"].update({var.target: var.to_dict()})

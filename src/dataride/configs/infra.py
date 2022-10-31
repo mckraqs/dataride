@@ -39,8 +39,8 @@ class Infra(ToDict):
         self.jinja_environment = jinja_environment
         self.verbose = verbose
 
-        self.__check()
         self.__update_with_defaults()
+        self.__check()
 
         self.config["resource_types"] = sorted(
             list(set([next(iter(resource)) for resource in self.config["resources"]]))
@@ -70,7 +70,7 @@ class Infra(ToDict):
 
         log_if_verbose("\tConfig check passed!", self.verbose)
 
-    def __update_with_defaults(self):
+    def __update_with_defaults(self) -> None:
         update_resource_dict_with_defaults(self.config, self.__default_name, create_resource_name=False)
 
         if not self.config.get("resources", False):
@@ -82,7 +82,10 @@ class Infra(ToDict):
 
         self.config["modules"] = {}
 
-    def process_resources(self):
+    def process_resources(self) -> None:
+        # Clearing resources list to make the process idempotent
+        self.resources = []
+
         for config_resource in self.config["resources"]:
             resource_name = next(iter(config_resource))
             resource = Resource(resource_name, config_resource[resource_name], self.jinja_environment, self.verbose)
@@ -91,24 +94,36 @@ class Infra(ToDict):
 
         self.update_config()
 
-    def process_environments(self):
+    def process_environments(self) -> None:
+        # Clearing environments list to make the process idempotent
+        self.environments = []
+
         for name_env, config_env in self.config["envs"].items():
             environment = Environment(name_env, config_env, self.jinja_environment, self.verbose)
             environment.extend_environment_data(self.config["providers"], self.modules)
             self.environments.append(environment)
 
-        for env in self.environments:
-            print(env.to_dict())
         self.update_config()
 
-    def process_extra_assets(self):
+    def process_modules(self) -> None:
+        for module_name, module in self.modules.items():
+            module.extend_module_data()
+
+        self.update_config()
+
+    def process_extra_assets(self) -> None:
+        # Clearing assets list to make the process idempotent
+        self.extra_assets = []
+
         for asset_name, asset_config in self.config["extra_assets"].items():
+            if asset_config is None:
+                asset_config = {}
             asset = ASSETS_DICT[asset_name]({**asset_config, **self.config}, self.jinja_environment, self.verbose)
             self.extra_assets.append(asset)
 
         self.update_config()
 
-    def add_module_data(self, resource: Resource):
+    def add_module_data(self, resource: Resource) -> None:
         """
         Fetch resource's information about module which it belongs
         :param resource: currently processed resource (dataride.configs.resource.Resource object)
@@ -116,14 +131,9 @@ class Infra(ToDict):
         if not self.modules.get(resource.module, False):
             self.modules[resource.module] = Module(resource.module, self.verbose)
 
-        self.modules[resource.module].main_tf += resource.template_filled + "\n" * 2
-        self.modules[resource.module].var_tf += "\n".join([str(var) for var in resource.variables])
-        self.modules[resource.module].vars_with_def += [
-            var for var in resource.variables if var.default_value is not None
-        ]
-        self.modules[resource.module].vars_no_def += [var for var in resource.variables if var.default_value is None]
+        self.modules[resource.module].add_resource(resource)
 
-    def update_config(self):
+    def update_config(self) -> None:
         self.config["resources"] = [{resource.name: resource.to_dict()} for resource in self.resources]
 
         for module_name, module in self.modules.items():
@@ -132,7 +142,7 @@ class Infra(ToDict):
         for environment in self.environments:
             self.config["envs"][environment.name] = environment.to_dict()
 
-    def save(self):
+    def save(self) -> None:
         self.__save_structure()
         self.__save_modules()
         self.__save_environments()
@@ -166,9 +176,10 @@ class Infra(ToDict):
         for asset in self.extra_assets:
             asset.save(self.destination)
 
-    def format_code(self, fmt: bool):
+    def format_code(self, fmt: bool) -> None:
         """
         If applicable, formats generated code. So far only `Terraform fmt` function call is available
+
         :param fmt: whether or not to format Terraform code
         """
         if fmt:
