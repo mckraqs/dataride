@@ -1,0 +1,46 @@
+# Sample AWS S3 bucket for data and AWS Glue Data Catalog with crawler
+#
+# Creates a structure that consists of:
+# - AWS S3 bucket
+#   - dataride-bucket-data
+# - AWS S3 subdirectories
+#   - dataride-bucket-data/bronze
+#   - dataride-bucket-data/silver
+#   - dataride-bucket-data/gold
+# - AWS Glue Data Catalog
+#   - database: dc_gold
+#   - crawler: glue_dc_crawler_gold
+
+providers:
+  - aws:
+      region: eu-central-1
+envs:
+  prod:
+resources:
+  - aws_s3:
+      _module: storage
+      resource_name: bucket_dataride
+      bucket_name: company-xyz-data
+      versioning: true
+  - aws_s3_directory:
+      _module: storage
+      bucket: company-xyz-data
+      key: bronze
+  - aws_s3_directory:
+      _module: storage
+      bucket: company-xyz-data
+      key: silver
+  - aws_s3_directory:
+      _module: storage
+      bucket: company-xyz-data
+      key: gold
+  - aws_glue_catalog_database:
+      _module: glue
+      database_name: dc_gold
+  - aws_glue_crawler:
+      _module: glue
+      resource_name: glue_dc_crawler_gold
+      database_name: dc_gold
+      crawler_role: dataride::arn:iam:123456
+      table_prefix: gold_
+      s3_target_path: s3://company-xyz-data/gold
