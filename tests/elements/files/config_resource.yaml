@@ -1,0 +1,9 @@
+_module: glue
+resource_name: glue_dc_crawler_gold
+database_name:
+  is_variable: true
+  type: string
+  default_name: dc_gold
+crawler_role: dataride::arn:iam:123456
+table_prefix: gold_
+s3_target_path: s3://company-xyz-data/gold

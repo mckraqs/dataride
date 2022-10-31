@@ -1,0 +1,3 @@
+name: test_variable
+type: string
+description: "This is test variable for AWS S3 bucket"
