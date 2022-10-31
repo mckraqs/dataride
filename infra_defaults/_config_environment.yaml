@@ -1,0 +1,8 @@
+backend:
+  type: s3
+  options:
+    key: "<ENTER YOUR VARIABLE VALUE HERE>"
+    bucket: "<ENTER YOUR VARIABLE VALUE HERE>"
+    region: "<ENTER YOUR VARIABLE VALUE HERE>"
+    dynamodb_table: "<ENTER YOUR VARIABLE VALUE HERE>" # LockID as String for partition key
+    encrypt: true

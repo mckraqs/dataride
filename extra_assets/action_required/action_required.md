@@ -50,7 +50,7 @@ Below you can find generated list of steps you need to take to fully make use of
     * {{ resource }}
 {%- endfor -%}
 {% endif %}
-{%- if extra_asset_names %}
+{% if extra_asset_names|length > 1 %}
 * **Additional assets**
 {%- for extra_asset in extra_asset_names %}
 {%- if extra_asset == "airflow_local" %}
