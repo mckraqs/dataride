@@ -18,7 +18,7 @@ envs:
   prod:
     # no variables or locals to define
 resources:
-  - aws_s3:
+  - aws_s3_bucket:
       _module: storage
       resource_name: bucket_dataride
       bucket_name: company-xyz-data

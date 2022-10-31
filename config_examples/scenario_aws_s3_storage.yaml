@@ -23,7 +23,7 @@ envs:
       options:
         path: "relative/path/to/terraform.tfstate"
 resources:
-  - aws_s3:
+  - aws_s3_bucket:
       _module: storage
       resource_name: data_bucket
       bucket_name: dataride-bucket-data
@@ -31,7 +31,7 @@ resources:
         is_variable: true
         name: bucket_versioning
         type: bool
-  - aws_s3:
+  - aws_s3_bucket:
       _module: storage
       resource_name: logs_bucket
       bucket_name: dataride-bucket-logs

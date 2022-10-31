@@ -34,7 +34,7 @@ envs:
 resources:
 
   # AWS S3 Airflow directories copy storage
-  - aws_s3:
+  - aws_s3_bucket:
       _module: storage
       resource_name: bucket_airflow
       bucket_name: _format("company-xyz-airflow-%s", var.env)
@@ -57,7 +57,7 @@ resources:
       key: plugins
 
   # AWS S3 data (bronze, silver, gold) storage
-  - aws_s3:
+  - aws_s3_bucket:
       _module: storage
       resource_name: bucket_data
       bucket_name: _format("company-xyz-data-%s", var.env)
