@@ -10,7 +10,7 @@ def jinja_environment():
 
 @pytest.fixture(scope="session")
 def config_resource_name():
-    return "aws_s3"
+    return "aws_s3_bucket"
 
 
 @pytest.fixture(scope="session")

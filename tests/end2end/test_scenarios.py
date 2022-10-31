@@ -26,7 +26,7 @@ def test_scenario_1(jinja_environment, scenario_1_result_tree):
     assert infra.config["resource_types"] == [
         "aws_glue_catalog_database",
         "aws_glue_crawler",
-        "aws_s3",
+        "aws_s3_bucket",
         "aws_s3_directory",
     ]
 
