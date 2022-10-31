@@ -21,17 +21,15 @@ providers:
       region: eu-central-1
 envs:
   prod:
-    env:
-      is_variable: true
-      name: env
-      type: string
-      default_value: prod
+    variables:
+      env:
+        type: string
+        default_value: prod
   test:
-    env:
-      is_variable: true
-      name: env
-      type: string
-      default_value: test
+    variables:
+      env:
+        type: string
+        default_value: test
 
 resources:
 
@@ -47,15 +45,15 @@ resources:
         type: string
   - aws_s3_directory:
       _module: storage
-      bucket: _aws_s3_bucket.bucket_dataride.name
+      bucket: _aws_s3_bucket.bucket_airflow.name
       key: dags
   - aws_s3_directory:
       _module: storage
-      bucket: _aws_s3_bucket.bucket_dataride.name
+      bucket: _aws_s3_bucket.bucket_airflow.name
       key: logs
   - aws_s3_directory:
       _module: storage
-      bucket: _aws_s3_bucket.bucket_dataride.name
+      bucket: _aws_s3_bucket.bucket_airflow.name
       key: plugins
 
   # AWS S3 data (bronze, silver, gold) storage
@@ -66,16 +64,17 @@ resources:
       versioning: true
   - aws_s3_directory:
       _module: storage
-      bucket: _aws_s3_bucket.bucket_dataride.name
-      key: dags
+      bucket: _aws_s3_bucket.bucket_data.name
+      key: bronze
   - aws_s3_directory:
       _module: storage
-      bucket: _aws_s3_bucket.bucket_dataride.name
-      key: logs
+      bucket: _aws_s3_bucket.bucket_data.name
+      key: silver
   - aws_s3_directory:
       _module: storage
-      bucket: _aws_s3_bucket.bucket_dataride.name
-      key: plugins
+      bucket: _aws_s3_bucket.bucket_data.name
+      key: gold
 
+# Extra asset to indicate local Airflow setup
 extra_assets:
   airflow_local:

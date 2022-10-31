@@ -12,15 +12,12 @@ providers:
       region: eu-central-1
 envs:
   prod:
-    versioning:
-      is_variable: true
-      type: string
     # Backend definition skipped on purpose, to see default one
+    variables:
+      versioning:
+        name: bucket_versioning
+        type: bool
   test:
-    versioning:
-      is_variable: true
-      default_value: false
-      type: string
     backend:
       type: local
       options:
@@ -32,11 +29,16 @@ resources:
       bucket_name: dataride-bucket-data
       versioning:
         is_variable: true
+        name: bucket_versioning
         type: bool
   - aws_s3:
       _module: storage
       resource_name: logs_bucket
       bucket_name: dataride-bucket-logs
+      versioning:
+        is_variable: true
+        name: bucket_versioning
+        type: bool
   - aws_s3_directory:
       _module: storage
       resource_name: s3_logs_directory

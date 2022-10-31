@@ -19,8 +19,10 @@ module "{{ module_name }}" {
   {% else %}
   {{ var }} = var.{{ var }}
   {% endif %}
-  {%- endfor %}
-  {%- endif %}}
+  {%- endfor %}}
+  {%- else %}
+}
+  {% endif -%}
 {% endfor %}
 
 terraform {
