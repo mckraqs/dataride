@@ -17,11 +17,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.local
-          key: poetry-1.1.7
+          key: poetry-1.2.1
       - name: install poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.1.7
+          version: 1.2.1
           virtualenvs-create: true
           virtualenvs-in-project: true
       - name: cache deps
@@ -34,8 +34,4 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
       - run: poetry install --no-interaction
       - name: Run tests with poetry
-        env:
-          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
         run: poetry run pytest
