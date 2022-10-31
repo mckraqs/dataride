@@ -1,0 +1,9 @@
+variables:
+  variable_test:
+    name: var_bucket_aws
+    type: string
+    description: "This is test variable for AWS S3 bucket"
+backend:
+  type: local
+  options:
+    path: "path/to/my/local/state.tfstate"
