@@ -19,7 +19,7 @@ Below you can find and example of running the `dataride` CLI, using config examp
 dataride create -c config_examples/scenario_aws_s3_and_data_catalog.yaml -d results/infra_s3_and_glue
 ```
 
-<img src="https://github.com/mckraqs/dataride/tree/main/media/example_showcase.gif?raw=true"/>
+<img src="https://github.com/mckraqs/dataride/tree/main/media/example_showcase.gif"/>
 
 ## Documentation
 
