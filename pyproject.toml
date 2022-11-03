@@ -1,10 +1,19 @@
 [tool.poetry]
 name = "dataride"
-version = "0.1.0"
+version = "0.2.0"
 description = "Lightning-fast data platform setup for small/medium projects & PoCs"
 authors = ["Mateusz Polakowski <mateusz.polakowski.ds@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+keywords = ["data", "platform", "cloud", "infrastructure", "terraform", "python"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
