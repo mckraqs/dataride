@@ -14,7 +14,7 @@
 providers:
   - aws:
       region: eu-central-1
-envs:
+environments:
   prod:
 resources:
   - aws_s3_bucket:

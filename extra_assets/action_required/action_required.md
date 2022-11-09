@@ -11,7 +11,7 @@ Even though we try to spare you as much mundane work as possible, you are still 
 Below you can find generated list of steps you need to take to fully make use of the provided setup. 
 
 * **Backend** - please check your Terraform backend configurations and fill missing values for each environment separately: 
-    {%- for env_name, env_config in envs.items() %}
+    {%- for env_name, env_config in environments.items() %}
     * env: {{ env_name }} (backend in: `<destination>/{{ env_name }}/main.tf`)
     {%- endfor %}
 * **Module variables without default values** - plase check whether all module variables with no default value provided are managed in <u>each</u> environment
@@ -26,7 +26,7 @@ Below you can find generated list of steps you need to take to fully make use of
     {% endif -%}
     {%- endfor %}
 * **Environment variables without default values** - please check environment variables to fill missing values if no default was provided in a config file.
-    {%- for env_name, env_config in envs.items() %}
+    {%- for env_name, env_config in environments.items() %}
     * env: {{ env_name }}
     {%- if env_config['variables']|length > 0 -%}
     {%- for var in env_config['variables'] %}
