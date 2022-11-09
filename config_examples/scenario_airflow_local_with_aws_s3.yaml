@@ -19,7 +19,7 @@
 providers:
   - aws:
       region: eu-central-1
-envs:
+environments:
   prod:
     variables:
       env:
