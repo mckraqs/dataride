@@ -34,7 +34,7 @@ Below you can find the configuration file's elements that are required to genera
 
 * **providers** - list of Terraform providers to specify 
   * to define any provider detailed information, simply put it as an item of a provider's dictionary 
-* **envs** - list of environments to create (so far each environment implements all defined Terraform modules) 
+* **environments** - list of environments to create (so far each environment implements all defined Terraform modules) 
     * **variables** - variables list for the environment. Each variable allows to provide:
         * *type* (required)
         * *default_value* (optional)
@@ -54,7 +54,7 @@ providers:
       region: eu-central-1
 
 # Terraform environments that instantiate all defined modules
-envs:
+environments:
   prod:
     variables: 
       env:

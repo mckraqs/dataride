@@ -10,7 +10,7 @@
 providers:
   - aws:
       region: eu-central-1
-envs:
+environments:
   prod:
     # Backend definition skipped on purpose, to see default one
     variables:

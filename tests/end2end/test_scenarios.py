@@ -11,7 +11,7 @@ def test_scenario_1(jinja_environment, scenario_1_result_tree):
     infra = Infra(scenario_1_config, f"{path}/results", jinja_environment, verbose=False)
 
     assert len(infra.config["providers"]) == 1
-    assert len(infra.config["envs"]) == 1
+    assert len(infra.config["environments"]) == 1
     assert len(infra.config["resources"]) == 6
     assert len(infra.config["modules"]) == 0
     assert len(infra.config["extra_assets"]) == 1
@@ -22,6 +22,7 @@ def test_scenario_1(jinja_environment, scenario_1_result_tree):
     infra.process_extra_assets()
 
     assert len(infra.modules) == 2
+    assert len(infra.environments) == 1
     assert len(infra.config["extra_asset_names"]) == 1
     assert infra.config["resource_types"] == [
         "aws_glue_catalog_database",

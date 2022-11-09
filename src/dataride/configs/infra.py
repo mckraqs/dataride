@@ -98,7 +98,7 @@ class Infra(ToDict):
         # Clearing environments list to make the process idempotent
         self.environments = []
 
-        for name_env, config_env in self.config["envs"].items():
+        for name_env, config_env in self.config["environments"].items():
             environment = Environment(name_env, config_env, self.jinja_environment, self.verbose)
             environment.extend_environment_data(self.config["providers"], self.modules)
             self.environments.append(environment)
@@ -140,7 +140,7 @@ class Infra(ToDict):
             self.config["modules"][module_name] = module.to_dict()
 
         for environment in self.environments:
-            self.config["envs"][environment.name] = environment.to_dict()
+            self.config["environments"][environment.name] = environment.to_dict()
 
     def save(self) -> None:
         self.__save_structure()
