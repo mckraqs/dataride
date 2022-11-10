@@ -1,6 +1,7 @@
 import os
 import logging
 import subprocess
+from copy import deepcopy
 from typing import List, Dict
 from dataclasses import dataclass
 
@@ -42,11 +43,6 @@ class Infra(ToDict):
         self.__update_with_defaults()
         self.__check()
 
-        self.config["resource_types"] = sorted(
-            list(set([next(iter(resource)) for resource in self.config["resources"]]))
-        )
-        self.config["extra_asset_names"] = sorted(list(set([asset for asset in self.config["extra_assets"].keys()])))
-
     def __check(self) -> None:
         log_if_verbose("\tRunning main config file check...", self.verbose)
 
@@ -80,19 +76,62 @@ class Infra(ToDict):
             self.config["extra_assets"] = {}
         self.config["extra_assets"]["action_required"] = {}
 
-        self.config["modules"] = {}
+        if not self.config.get("modules", False):
+            self.config["modules"] = {}
 
-    def process_resources(self) -> None:
-        # Clearing resources list to make the process idempotent
-        self.resources = []
+    def __update_config(self, key: str) -> None:
+        """
+        Updates infrastructure config dictionary, based on a passed key
+        TODO: When upgrading to Python 3.10, change this to match-case syntax
+        :param key: key indicating which config part to update
+        """
+        if key == "resources":
+            self.config["resources"] = [{resource.name: resource.to_dict()} for resource in self.resources]
+            self.config["resource_types"] = sorted(
+                list(set([next(iter(resource)) for resource in self.config["resources"]]))
+            )
+        elif key == "modules":
+            for module_name, module in self.modules.items():
+                self.config["modules"][module_name] = module.to_dict()
+        elif key == "environments":
+            for environment in self.environments:
+                self.config["environments"][environment.name] = environment.to_dict()
+        elif key == "extra_assets":
+            self.config["extra_asset_names"] = sorted(
+                list(set([asset for asset in self.config["extra_assets"].keys()]))
+            )
+        else:
+            raise KeyError("Wrong key passed to update config dictionary")
 
-        for config_resource in self.config["resources"]:
-            resource_name = next(iter(config_resource))
-            resource = Resource(resource_name, config_resource[resource_name], self.jinja_environment, self.verbose)
-            self.add_module_data(resource)
+    def __create_resources_from_configs(self, resources_configs: List[Dict], module_name: str = None) -> None:
+        for resource_config in resources_configs:
+            resource_name = next(iter(resource_config))
+            if module_name is not None:
+                resource_config[resource_name]["_module"] = module_name
+            resource = Resource(resource_name, resource_config[resource_name], self.jinja_environment, self.verbose)
+            self.__create_module_if_not_existing(resource.module, {})
+            self.modules[resource.module].add_resource(resource)
             self.resources.append(resource)
 
-        self.update_config()
+    def __create_module_if_not_existing(self, module_name: str, module_config: Dict) -> None:
+        if not self.modules.get(module_name, False):
+            self.modules[module_name] = Module(module_name, module_config, self.jinja_environment, self.verbose)
+
+    def process_modules(self) -> None:
+        if self.config.get("modules", False):
+            for module_name, module_config in self.config["modules"].items():
+                self.__create_module_if_not_existing(module_name, deepcopy(module_config))
+
+                if module_config is not None and module_config.get("resources", False):
+                    self.__create_resources_from_configs(module_config["resources"], module_name)
+                self.modules[module_name].extend_module_data()
+
+            self.__update_config("modules")
+
+    def process_resources(self) -> None:
+        self.__create_resources_from_configs(self.config["resources"])
+        self.__update_config("resources")
+        self.__update_config("modules")
 
     def process_environments(self) -> None:
         # Clearing environments list to make the process idempotent
@@ -103,13 +142,7 @@ class Infra(ToDict):
             environment.extend_environment_data(self.config["providers"], self.modules)
             self.environments.append(environment)
 
-        self.update_config()
-
-    def process_modules(self) -> None:
-        for module_name, module in self.modules.items():
-            module.extend_module_data()
-
-        self.update_config()
+        self.__update_config("environments")
 
     def process_extra_assets(self) -> None:
         # Clearing assets list to make the process idempotent
@@ -121,26 +154,10 @@ class Infra(ToDict):
             asset = ASSETS_DICT[asset_name]({**asset_config, **self.config}, self.jinja_environment, self.verbose)
             self.extra_assets.append(asset)
 
-        self.update_config()
+        self.__update_config("extra_assets")
 
-    def add_module_data(self, resource: Resource) -> None:
-        """
-        Fetch resource's information about module which it belongs
-        :param resource: currently processed resource (dataride.configs.resource.Resource object)
-        """
-        if not self.modules.get(resource.module, False):
-            self.modules[resource.module] = Module(resource.module, self.verbose)
-
-        self.modules[resource.module].add_resource(resource)
-
-    def update_config(self) -> None:
-        self.config["resources"] = [{resource.name: resource.to_dict()} for resource in self.resources]
-
-        for module_name, module in self.modules.items():
-            self.config["modules"][module_name] = module.to_dict()
-
-        for environment in self.environments:
-            self.config["environments"][environment.name] = environment.to_dict()
+    def to_dict(self) -> Dict:
+        return self.config
 
     def save(self) -> None:
         self.__save_structure()
@@ -185,6 +202,3 @@ class Infra(ToDict):
         if fmt:
             log_if_verbose("Formatting Terraform code", self.verbose)
             subprocess.run(["terraform", "fmt", "-recursive", "-list=false", self.destination])
-
-    def to_dict(self) -> Dict:
-        return self.config

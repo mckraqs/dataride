@@ -18,8 +18,8 @@ class Application:
         config_infra = load_config(config_path)
         infra = Infra(config_infra, destination, self.jinja_environment, verbose)
 
-        infra.process_resources()
         infra.process_modules()
+        infra.process_resources()
         infra.process_environments()
         infra.process_extra_assets()
 

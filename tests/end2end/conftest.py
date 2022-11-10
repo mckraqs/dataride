@@ -22,6 +22,11 @@ def scenario_1_result_tree():
     return ["prod", "modules", "action_required.md"]
 
 
+@pytest.fixture(scope="session")
+def scenario_2_result_tree():
+    return ["prod", "test", "modules", "action_required.md"]
+
+
 @pytest.fixture(scope="session", autouse=True)
 def end2end_tests_cleanup():
     scenarios_path = "tests/end2end/files/scenarios"

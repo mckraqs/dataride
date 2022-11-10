@@ -55,6 +55,20 @@ class Environment(ToDict):
     def __check(self) -> None:
         pass
 
+    def __update_with_defaults(self) -> None:
+        if self.config is None:
+            self.config = {}
+
+        self.config = update_resource_dict_with_defaults(self.config, self.__default_name, create_resource_name=False)
+
+    def __update_config(self) -> None:
+        self.config["name"] = self.name
+        self.config["main.tf"] = self.main_tf
+        self.config["var.tf"] = self.var_tf
+        self.config["variables_names"] = self.variables_names
+        for var in self.variables:
+            self.config["variables"].update({var.target: var.to_dict()})
+
     def __get_variables(self) -> None:
         if self.config.get("variables", False):
             for var_name, var_config in self.config["variables"].items():
@@ -62,12 +76,6 @@ class Environment(ToDict):
                 self.variables.append(var)
 
         self.variables_names = [var.name for var in self.variables]
-
-    def __update_with_defaults(self) -> None:
-        if self.config is None:
-            self.config = {}
-
-        self.config = update_resource_dict_with_defaults(self.config, self.__default_name, create_resource_name=False)
 
     def extend_environment_data(self, infra_providers: Dict, infra_modules: Dict[str, Module]) -> None:
         """
@@ -77,7 +85,6 @@ class Environment(ToDict):
         :param infra_modules: dictionary of infrastructure's modules, passed from the main Infra objects
         """
         self.var_tf = "\n".join([str(var) for var in self.variables])
-
         infra_modules_transformed = {module_name: module.to_dict() for module_name, module in infra_modules.items()}
         full_template_config = {
             "modules": infra_modules_transformed,
@@ -124,11 +131,3 @@ class Environment(ToDict):
             f" no default values - {len(vars_no_def)}",
             self.verbose,
         )
-
-    def __update_config(self) -> None:
-        self.config["name"] = self.name
-        self.config["main.tf"] = self.main_tf
-        self.config["var.tf"] = self.var_tf
-        self.config["variables_names"] = self.variables_names
-        for var in self.variables:
-            self.config["variables"].update({var.target: var.to_dict()})
