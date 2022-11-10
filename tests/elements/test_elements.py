@@ -21,8 +21,8 @@ def test_resource_setup(resource_name, config_resource, jinja_environment):
     assert resource.variables[0].target == "database_name"
 
 
-def test_module_setup(module_name):
-    module = Module(module_name, verbose=False)
+def test_module_empty_setup(module_name, config_module_empty, jinja_environment):
+    module = Module(module_name, config_module_empty, jinja_environment, verbose=False)
 
     assert module.name == module_name
     assert len(module.variables) == 0

@@ -36,3 +36,8 @@ def config_resource():
 @pytest.fixture(scope="session")
 def config_environment():
     return load_config("tests/elements/files/config_environment.yaml")
+
+
+@pytest.fixture(scope="session")
+def config_module_empty():
+    return {}
