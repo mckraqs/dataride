@@ -67,10 +67,6 @@ class Resource(ToDict):
     def __update_with_defaults(self) -> None:
         self.config = update_resource_dict_with_defaults(self.config, self.name)
 
-    def __render_template(self) -> None:
-        if self.config["_jinja"]:
-            self.template = render_jinja(self.template, self.config, self.jinja_environment)
-
     def __get_variables(self) -> None:
         for field_name, field_value in self.config.items():
             if type(field_value) == dict and field_value.get("is_variable", False):
@@ -79,7 +75,14 @@ class Resource(ToDict):
 
     def __update_config(self) -> None:
         for var in self.variables:
-            self.config.update({var.name: var.to_dict()})
+            self.config.update({var.target: var.to_dict()})
+
+    def __render_template(self) -> None:
+        if self.config["_jinja"]:
+            self.template = render_jinja(self.template, self.config, self.jinja_environment)
+
+    def to_dict(self) -> Dict:
+        return self.config
 
     def log_stats(self) -> None:
         vars_with_def = [var for var in self.variables if var.default_value is not None]
@@ -89,6 +92,3 @@ class Resource(ToDict):
             f" no default values - {len(vars_no_def)}",
             self.verbose,
         )
-
-    def to_dict(self) -> Dict:
-        return self.config
