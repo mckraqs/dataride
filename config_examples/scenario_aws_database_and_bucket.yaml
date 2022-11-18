@@ -1,0 +1,24 @@
+# Sample AWS RDS MySQL database and S3 bucket with snapshots directory
+#
+# Creates a structure that consists of:
+# - AWS RDS instance
+# - AWS S3 bucket (database-data)
+# - AWS S3 subdirectory (/snapshots)
+
+providers:
+  - aws:
+      region: eu-central-1
+environments:
+  prod:
+  test:
+modules:
+  storage:
+    resources:
+      - aws_db_instance:
+          resource_name: rds_database
+      - aws_s3_bucket:
+          resource_name: bucket_data
+          bucket_name: rds_data
+      - aws_s3_directory:
+          bucket: rds_data
+          key: snapshots

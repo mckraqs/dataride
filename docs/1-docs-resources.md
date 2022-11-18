@@ -17,9 +17,23 @@ Moreover, there are a few files that start with the `_config` prefix. They shoul
 
 ## Resources list
 
-Important information - resources' names match (in the majority of cases) Terraform objects with the corresponding name. Therefore, if you want to research some object more, or if a particular parameter is missing in a template, you can easily refer to Terraform documentation. 
+Important information - resources' names match (in the majority of cases) Terraform objects with the corresponding name. Therefore, if you want to research some object more, or if a particular parameter is missing in a template, you can easily refer to [Terraform documentation](https://registry.terraform.io/browse/providers). 
 
 Also, if the below description is not enough, you can check the `infra_defaults` and `infra_templates` directories to see defaults and resource templates.
+
+### aws_db_instance
+
+Available parameters:
+
+* *allocated_storage* - optional, default: 10
+* *db_name* - optional, default: dataride_db
+* *engine* - optional, default: mysql
+* *engine_version* - optional, default: 5.7
+* *instance_class* - optional, default: db.t3.micro
+* *username* - optional, default: module variable is created
+* *password* - optional, default: module variable is created
+* *parameter_group_name* - optional, default: default.mysql5.7
+* *skip_final_snapshot* - optional, default: true
 
 ### aws_eip
 

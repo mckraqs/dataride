@@ -1,0 +1,18 @@
+providers:
+  - aws:
+      region: eu-central-1
+environments:
+  prod:
+  beta:
+  test:
+modules:
+  storage:
+    resources:
+      - aws_db_instance:
+          resource_name: rds_database
+      - aws_s3_bucket:
+          resource_name: bucket_data
+          bucket_name: rds_data
+      - aws_s3_directory:
+          bucket: rds_data
+          key: snapshots
