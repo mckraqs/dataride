@@ -1,10 +1,9 @@
 variable <name> {
   type = <type>
-
-  {%- if default_value is not none %}
+  {% if default_value is not none %}
   default = <default_value>
-  {%- endif -%}
+  {% endif -%}
   {%- if description != '' %}
   description = <description>
-  {% endif %}
+  {% endif -%}
 }
