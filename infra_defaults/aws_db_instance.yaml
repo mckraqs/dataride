@@ -1,0 +1,17 @@
+_jinja: false
+_module: main
+allocated_storage: 10
+db_name: dataride_db
+engine: mysql
+engine_version: 5.7
+instance_class: db.t3.micro
+username:
+  is_variable: true
+  name: username
+  type: string
+password:
+  is_variable: true
+  name: password
+  type: string
+parameter_group_name: default.mysql5.7
+skip_final_snapshot: true

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dataride"
-version = "0.2.1"
+version = "0.2.2"
 description = "Lightning-fast data platform setup for small/medium projects & PoCs"
 authors = ["Mateusz Polakowski <mateusz.polakowski.ds@gmail.com>"]
 license = "MIT"

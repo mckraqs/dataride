@@ -12,17 +12,17 @@ provider "{{ provider_name }}" {
 {%- for module_name, module_info in modules.items() %}
 module "{{ module_name }}" {
   source = "./../modules/{{ module_name }}"
-  {%- if module_info['vars_no_def'] %}
+  {% if module_info['vars_no_def'] %}
   {% for var in module_info['vars_no_def'] -%}
   {% if var not in env['variables_names'] -%}
   {{ var }} = "<ENTER YOUR VARIABLE VALUE HERE>"
-  {% else %}
+  {% else -%}
   {{ var }} = var.{{ var }}
   {% endif %}
-  {%- endfor %}}
+  {%- endfor %}
   {%- else %}
-}
   {% endif -%}
+}
 {% endfor %}
 
 terraform {

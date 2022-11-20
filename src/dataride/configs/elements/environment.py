@@ -84,7 +84,7 @@ class Environment(ToDict):
         :param infra_providers: list of infrastructure's providers, passed from the main Infra objects
         :param infra_modules: dictionary of infrastructure's modules, passed from the main Infra objects
         """
-        self.var_tf = "\n".join([str(var) for var in self.variables])
+        self.var_tf = "\n\n".join([str(var) for var in self.variables])
         infra_modules_transformed = {module_name: module.to_dict() for module_name, module in infra_modules.items()}
         full_template_config = {
             "modules": infra_modules_transformed,
