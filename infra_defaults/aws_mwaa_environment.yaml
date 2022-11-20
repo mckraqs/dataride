@@ -1,0 +1,34 @@
+_jinja: false
+_module: main
+name: dataride_mwaa
+airflow_version: "2.2.2"
+execution_role_arn:
+  is_variable: true
+  type: string
+source_bucket_arn:
+  is_variable: true
+  type: string
+dag_s3_path: /dags
+plugins_s3_path: plugins/plugins.zip
+requirements_s3_path: requirements/requirements.txt
+environment_class: mw1.medium
+min_workers: 1
+max_workers: 4
+schedulers: 2
+webserver_access_mode: PUBLIC_ONLY
+security_group_ids:
+  is_variable: true
+  type: string
+subnet_ids:
+  is_variable: true
+  type: list(string)
+dag_processing_logs__enabled: true
+dag_processing_logs__log_level: INFO
+scheduler_logs__enabled: true
+scheduler_logs__log_level: INFO
+task_logs__enabled: true
+task_logs__log_level: INFO
+webserver_logs__enabled: true
+webserver_logs__log_level: INFO
+worker_logs__enabled: true
+worker_logs__log_level: INFO

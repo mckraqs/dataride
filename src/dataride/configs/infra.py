@@ -40,8 +40,8 @@ class Infra(ToDict):
         self.jinja_environment = jinja_environment
         self.verbose = verbose
 
-        self.__update_with_defaults()
         self.__check()
+        self.__update_with_defaults()
 
     def __check(self) -> None:
         log_if_verbose("\tRunning main config file check...", self.verbose)
@@ -106,8 +106,13 @@ class Infra(ToDict):
     def __create_resources_from_configs(self, resources_configs: List[Dict], module_name: str = None) -> None:
         for resource_config in resources_configs:
             resource_name = next(iter(resource_config))
+
+            # If module name is passed, resource's value should be overwritten
             if module_name is not None:
+                if resource_config[resource_name] is None:
+                    resource_config[resource_name] = {}  # creates a dictionary if resource_config is empty
                 resource_config[resource_name]["_module"] = module_name
+
             resource = Resource(resource_name, resource_config[resource_name], self.jinja_environment, self.verbose)
             self.__create_module_if_not_existing(resource.module, {})
             self.modules[resource.module].add_resource(resource)
@@ -118,25 +123,31 @@ class Infra(ToDict):
             self.modules[module_name] = Module(module_name, module_config, self.jinja_environment, self.verbose)
 
     def process_modules(self) -> None:
-        if self.config.get("modules", False):
-            for module_name, module_config in self.config["modules"].items():
-                self.__create_module_if_not_existing(module_name, deepcopy(module_config))
+        """
+        Iterates over modules passed in `modules` YAML config section, and initializes necessary objects.
+        If applicable, creates all resources featured in a module's definition
+        """
+        for module_name, module_config in self.config["modules"].items():
+            self.__create_module_if_not_existing(module_name, deepcopy(module_config))
 
-                if module_config is not None and module_config.get("resources", False):
-                    self.__create_resources_from_configs(module_config["resources"], module_name)
-                self.modules[module_name].extend_module_data()
+            if module_config is not None and module_config.get("resources", False):
+                self.__create_resources_from_configs(module_config["resources"], module_name)
+            self.modules[module_name].extend_module_data()
 
-            self.__update_config("modules")
+        self.__update_config("modules")
 
     def process_resources(self) -> None:
+        """
+        Iterates over resources passed in `resources` YAML config section, and initializes necessary objects.
+        """
         self.__create_resources_from_configs(self.config["resources"])
         self.__update_config("resources")
         self.__update_config("modules")
 
     def process_environments(self) -> None:
-        # Clearing environments list to make the process idempotent
-        self.environments = []
-
+        """
+        Iterates over environments passed in `environments` YAML config section, and initializes necessary objects.
+        """
         for name_env, config_env in self.config["environments"].items():
             environment = Environment(name_env, config_env, self.jinja_environment, self.verbose)
             environment.extend_environment_data(self.config["providers"], self.modules)
@@ -145,9 +156,9 @@ class Infra(ToDict):
         self.__update_config("environments")
 
     def process_extra_assets(self) -> None:
-        # Clearing assets list to make the process idempotent
-        self.extra_assets = []
-
+        """
+        Iterates over extra assets passed in `extra_assets` YAML config section, and initializes necessary objects.
+        """
         for asset_name, asset_config in self.config["extra_assets"].items():
             if asset_config is None:
                 asset_config = {}
@@ -197,7 +208,7 @@ class Infra(ToDict):
         """
         If applicable, formats generated code. So far only `Terraform fmt` function call is available
 
-        :param fmt: whether or not to format Terraform code
+        :param fmt: whether to format Terraform code
         """
         if fmt:
             log_if_verbose("Formatting Terraform code", self.verbose)

@@ -1,0 +1,56 @@
+# Sample Apache Airflow environments setup: locally and on AWS cloud
+# (includes also: AWS S3 bucket for Airflow setup)
+#
+# Creates a structure that consists of:
+# - Local Airflow directories: dags/, logs/, plugins/
+# - Airflow Docker Compose file to download all necessary images and start the services,
+#     more on running Airflow in Docker:
+#     https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html
+# - AWS S3 structure, buckets and directories (1 version for each environment)
+#   - company-xyz-airflow-<env>
+#     - dags/
+#     - logs/
+#     - plugins/
+# - AWS MWAA environment, pointing to the proper bucket directories created beforehand
+
+providers:
+  - aws:
+      region: eu-central-1
+environments:
+  prod:
+    variables:
+      env:
+        type: string
+        default_value: prod
+  test:
+    variables:
+      env:
+        type: string
+        default_value: test
+
+modules:
+  storage:
+    variables:
+      env:
+        type: string
+    resources:
+      - aws_s3_bucket:
+          resource_name: bucket_airflow
+          bucket_name: _format("company-xyz-airflow-%s", var.env)
+          versioning: true
+      - aws_s3_directory:
+          bucket: _aws_s3_bucket.bucket_airflow.id
+          key: dags
+      - aws_s3_directory:
+          bucket: _aws_s3_bucket.bucket_airflow.id
+          key: logs
+      - aws_s3_directory:
+          bucket: _aws_s3_bucket.bucket_airflow.id
+          key: plugins
+  airflow_aws:
+    resources:
+      - aws_mwaa_environment:
+
+# Extra asset to indicate local Airflow setup
+extra_assets:
+  airflow_local:

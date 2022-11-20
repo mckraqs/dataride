@@ -82,7 +82,7 @@ class Module(ToDict):
         self.__update_config()
 
     def extend_module_data(self) -> None:
-        self.var_tf = "\n".join([str(var) for var in self.variables])
+        self.var_tf = "\n\n".join([str(var) for var in self.variables])
         self.__update_config()
 
     def to_dict(self) -> Dict:
