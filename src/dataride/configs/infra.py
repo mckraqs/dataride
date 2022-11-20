@@ -74,7 +74,8 @@ class Infra(ToDict):
 
         if not self.config.get("extra_assets", False):
             self.config["extra_assets"] = {}
-        self.config["extra_assets"]["action_required"] = {}
+        # To always make sure that action_required document is processed as the last extra asset
+        self.config["extra_assets"]["action_required"] = self.config["extra_assets"].get("action_required", {})
 
         if not self.config.get("modules", False):
             self.config["modules"] = {}
@@ -164,8 +165,7 @@ class Infra(ToDict):
                 asset_config = {}
             asset = ASSETS_DICT[asset_name]({**asset_config, **self.config}, self.jinja_environment, self.verbose)
             self.extra_assets.append(asset)
-
-        self.__update_config("extra_assets")
+            self.__update_config("extra_assets")
 
     def to_dict(self) -> Dict:
         return self.config

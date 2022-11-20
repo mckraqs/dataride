@@ -1,0 +1,49 @@
+# Sample AWS storage infrastructure and local mage-ai setup
+#
+# Creates a structure that consists of:
+# - AWS S3 bucket
+#   - dataride-bucket-data
+# - AWS S3 subdirectories
+#   - dataride-company-data-<env>/bronze
+#   - dataride-company-data-<env>/silver
+#   - dataride-company-data-<env>/gold
+# - mage-ai directory (with detailed docs how to process further)
+
+providers:
+  - aws:
+      region: eu-central-1
+environments:
+  prod:
+    variables:
+      env:
+        type: string
+        default_value: prod
+  test:
+    variables:
+      env:
+        type: string
+        default_value: test
+modules:
+  storage:
+    variables:
+      env:
+        type: string
+        description: "Environment name to provide proper data storage structure"
+    resources:
+      - aws_s3_bucket:
+          resource_name: bucket_dataride
+          bucket_name: _format("dataride-company-data-%s", var.env)
+          versioning: true
+      - aws_s3_directory:
+          bucket: _aws_s3_bucket.bucket_dataride.id
+          key: bronze
+      - aws_s3_directory:
+          bucket: _aws_s3_bucket.bucket_dataride.id
+          key: silver
+      - aws_s3_directory:
+          bucket: _aws_s3_bucket.bucket_dataride.id
+          key: gold
+
+# Defining mage-ai as an extra asset to be prepared
+extra_assets:
+  mageai_local:
