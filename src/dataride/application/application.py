@@ -1,12 +1,14 @@
+from jinja2.environment import Environment
+
 from dataride.configs import Infra
-from dataride.utils import prepare_jinja_environment, load_config
 
 
 class Application:
-    def __init__(self):
-        self.jinja_environment = prepare_jinja_environment()
+    def __init__(self, jinja_environment: Environment, infra: Infra):
+        self.jinja_environment = jinja_environment
+        self.infra = infra
 
-    def create_infra_setup(self, config_path: str, destination: str, fmt: bool = True, verbose: bool = False) -> None:
+    def create_infra_setup(self, fmt: bool = True) -> None:
         """
         Creates the infrastructure setup based on the provided config file
 
@@ -15,13 +17,13 @@ class Application:
         :param fmt: whether to execute `terraform fmt` on a destination directory after infrastructure generation
         :param verbose: whether to print more outputs
         """
-        config_infra = load_config(config_path)
-        infra = Infra(config_infra, destination, self.jinja_environment, verbose)
 
-        infra.process_modules()
-        infra.process_resources()
-        infra.process_environments()
-        infra.process_extra_assets()
+        self.infra.process_modules()
+        self.infra.process_resources()
+        self.infra.process_environments()
+        self.infra.process_extra_assets()
 
-        infra.save()
-        infra.format_code(fmt)
+        self.infra.save()
+
+        if fmt:
+            self.infra.format_code()

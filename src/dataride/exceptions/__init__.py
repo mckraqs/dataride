@@ -1,0 +1,2 @@
+class ConfigFileReadError(Exception):
+    pass
