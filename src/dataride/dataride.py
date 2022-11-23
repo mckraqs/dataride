@@ -1,6 +1,8 @@
 import click
 
 from dataride.application import Application
+from dataride.configs import Infra
+from dataride.utils import prepare_jinja_environment, load_config
 
 
 @click.group()
@@ -31,4 +33,11 @@ def create(config_path: str, destination: str, fmt: bool = True, verbose: bool =
     :param fmt: whether to execute `terraform fmt` on a destination directory after infrastructure generation
     :param verbose: whether to print more outputs
     """
-    Application().create_infra_setup(config_path, destination, fmt, verbose)
+
+    config_infra = load_config(config_path)
+
+    jinja_env = prepare_jinja_environment()
+    infra = Infra(config_infra, destination, jinja_env, verbose)
+
+    application = Application(jinja_env, infra)
+    application.create_infra_setup(destination, fmt, verbose)
