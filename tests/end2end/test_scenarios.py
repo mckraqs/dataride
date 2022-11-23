@@ -32,7 +32,7 @@ def test_scenario_1(jinja_environment, scenario_1_result_tree):
     ]
 
     infra.save()
-    infra.format_code(fmt=True)
+    infra.format_code()
 
     assert len(os.listdir(f"{path}/results")) == 3
     assert len([elem for elem in scenario_1_result_tree if elem not in os.listdir(f"{path}/results")]) == 0

@@ -204,12 +204,11 @@ class Infra(ToDict):
         for asset in self.extra_assets:
             asset.save(self.destination)
 
-    def format_code(self, fmt: bool) -> None:
+    def format_code(self) -> None:
         """
         If applicable, formats generated code. So far only `Terraform fmt` function call is available
 
         :param fmt: whether to format Terraform code
         """
-        if fmt:
-            log_if_verbose("Formatting Terraform code", self.verbose)
-            subprocess.run(["terraform", "fmt", "-recursive", "-list=false", self.destination])
+        log_if_verbose("Formatting Terraform code", self.verbose)
+        subprocess.run(["terraform", "fmt", "-recursive", "-list=false", self.destination])

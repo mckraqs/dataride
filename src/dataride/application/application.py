@@ -24,4 +24,6 @@ class Application:
         self.infra.process_extra_assets()
 
         self.infra.save()
-        self.infra.format_code(fmt)
+
+        if fmt:
+            self.infra.format_code()
